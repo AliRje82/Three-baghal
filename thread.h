@@ -21,7 +21,7 @@ char* read_line(FILE* fptr){
     }
 }
 
-void thread(char *ptr, char **requests,int* numbers,int n){
+void thread(char *ptr,struct recipt *rcpt){
     FILE *fptr;
     fptr = fopen(ptr,"r");
     // if file not opend !
@@ -35,7 +35,7 @@ void thread(char *ptr, char **requests,int* numbers,int n){
     char* found=NULL;
     int i =0;
 
-    while (i<n && strcmp(search,requests[i])!=0 )
+    while (i<rcpt->n && strcmp(search,rcpt->goods[i]->name)!=0 )
     {
         i++;
     }
@@ -43,8 +43,8 @@ void thread(char *ptr, char **requests,int* numbers,int n){
     double score=-1;
     int entity = -1;
 
-    if(i<n){
-        found = requests[i];
+    if(i<rcpt->n){
+        found = rcpt->goods[i]->name;
         printf("HIT %s\n",found);
         free(lineH);
 
@@ -65,7 +65,7 @@ void thread(char *ptr, char **requests,int* numbers,int n){
         search= lineH + strcspn(lineH," ")+1;
         entity = atoi(search);
         free(lineH);
-        if(entity < numbers[i]){
+        if(entity < rcpt->goods[i]->count){
             printf("Not enough item");
             fclose(fptr);
             return;

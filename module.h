@@ -6,7 +6,7 @@ struct good
 
 struct recipt
 {
-    struct good *goods;
+    struct good **goods;
     int n;
     int threashold;
 };
