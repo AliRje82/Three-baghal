@@ -1,1 +1,4 @@
 Dataset/*
+.vscode/*
+main
+test.c
