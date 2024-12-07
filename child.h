@@ -3,7 +3,7 @@
 #include "stdlib.h"
 #include "dirent.h"
 #include "sys/types.h"
-//#include "sys/wait.h"
+#include "sys/wait.h"
 #include "string.h"
 #include "unistd.h"
 #include "sys/stat.h"
@@ -64,7 +64,7 @@ void user_level(){
             perror("Fork failed");
             closedir(dp);
             return;
-        }else if (pid == 1) {
+        }else if (pid == 0) {
             printf("Child process with PID %d handling directory %s\n ", getpid(), full_path);
             sleep(1);
             exit(0);
