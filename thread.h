@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include "string.h"
+#include "module.h"
 
 #define MAX_LINE_LEN 1024
 
