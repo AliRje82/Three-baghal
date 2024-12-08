@@ -2,3 +2,4 @@ Dataset/*
 .vscode/*
 main
 test.c
+test

@@ -1,28 +1,30 @@
-struct grocery
+typedef struct
 {
-    char *name;
+    char name[64];
     int count;
-};
+} grocery;
 
-struct userInfo
+typedef struct
 {
-    struct grocery **groceries;
+    grocery *groceries;
     int user_id;
     int order_id;
     int budget;
     int n;
-};
+} userInfo;
 
-struct item{
+typedef struct
+{
     double score;
     double price;
-    char *name;
-};
+    char name[64];
+} item;
 
-struct recipt
+typedef struct
 {
-    struct item **items;
+    item *items;
     int n;
-};
+} recipt;
+
 
 

@@ -11,7 +11,7 @@
     - [ ]  Wait for all the process
   - [ ]  Store level
 
-    - [ ]  Create a process for each category
+    - [X]  Create a process for each category
     - [ ]  Wait for the lower level result
     - [ ]  Send result to upper level
     - [ ]  Wait for the upper level result
@@ -35,6 +35,6 @@
     - [ ]  Wait for the upper level
     - [ ]  See the message, change entity and modify the file (RW problem)
     - [ ]  Termination
-  - [ ]  Structs:
+  - [X]  Structs:
 
-    - [ ]  Adding encode and decode for bottom up
+    - [X]  Adding encode and decode for bottom up
