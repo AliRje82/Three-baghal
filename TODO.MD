@@ -35,3 +35,6 @@
     - [ ]  Wait for the upper level
     - [ ]  See the message, change entity and modify the file (RW problem)
     - [ ]  Termination
+  - [ ]  Structs:
+
+    - [ ]  Adding encode and decode for bottom up
