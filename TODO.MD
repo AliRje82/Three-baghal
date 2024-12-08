@@ -1,13 +1,13 @@
-- Tasks:
+- STasks:
 
   - [ ]  User level
 
-    - [ ]  Getting User input
-    - [ ]  Creating process for each shop
-    - [ ]  Waiting for lower level to give you options
+    - [X]  Getting User input
+    - [X]  Creating process for each shop
+    - [X]  Waiting for lower level to give you options
     - [ ]  Check if already have shoped
     - [ ]  Create a thread to get scores from user
-    - [ ]  Send the result to lower level
+    - [X]  Send the result to lower level
     - [ ]  Wait for all the process
   - [ ]  Store level
 
