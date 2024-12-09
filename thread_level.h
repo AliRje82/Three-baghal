@@ -1,8 +1,11 @@
 #include "stdio.h"
 #include "stdlib.h"
-#include "structs.h"
 #include "semaphore.h"
 #include "string.h"
+#include "structs.h"
+#include "pthread.h"
+#include <unistd.h>
+#include <time.h>
 
 #define SEM_MUTEX "/sem_reader_mutex"
 #define SEM_RW_MUTEX "/sem_rw_mutex"
@@ -10,14 +13,16 @@
 #define SHARED_MEM_SIZE sizeof(int)
 #define MAX_LINE_LEN 100
 
-int extract_file(FILE *fptr,item &it);
-char* read_line(FILE* fptr);
-int reader_problem(char *path,item &it,int &reader_count, 
+void write_log(char *path,char *massage,sem_t log);
+int check_forHit(userInfo *user,sem_t log,item it,char *path);
+void edit_file(char *path,double user_score,int user_wanted);
+void writer_problem(char *path,sem_t sem_rw,double user_score,int user_wanted);
+int reader_problem(char *path, item *it,int *reader_count, 
     sem_t sem_reader,sem_t sem_rw);
-void writer_problem(char *path,sem_t sem_rw,int user_score,int user_wanted);
-void edit_file(FILE *fptr,int user_score,int user_wanted);
-int check_forHit(userInfo *user,sem_t log,item it);
-void write_log(FILE *fptr,char *name);
+int extract_file(FILE *fptr,item *it);
+char* read_line(FILE* fptr);
+
+
 
 void main_thread(char *path,userInfo *usr, sem_t log){
 
@@ -25,27 +30,36 @@ void main_thread(char *path,userInfo *usr, sem_t log){
 /*
 Write to log
 */
-void write_log(){
-/* TOOD fix*/
+void write_log(char *path,char *massage,sem_t log){
+    FILE *fptr;
+    sem_wait(&log);
+    //Entring critical section
+    fptr = fopen(path,"a");
+    fprintf(fptr,massage);
+    fclose(fptr);
+    sem_post(&log);
+    //Exiting critical section
 }
 /*
 Check For hit!
 */
-int check_forHit(userInfo *user,sem_t log,item it){
+int check_forHit(userInfo *user,sem_t log,item it,char *path){
     int i=0;
     for(i = 0; i < user->n; i++)
     {
         if(strcmp(it.name,user->groceries->name)==0) break;
     }
-    char *name = nullptr;
+    char massage[MAX_LINE_LEN];
+    char new_path[MAX_LINE_LEN];
+    snprintf(new_path,MAX_LINE_LEN,"%s/USER%d_ORDERID%d.log",path,user->user_id,user->order_id);
     if(i < user->n){
-        name=(it.name);
+        snprintf(massage,MAX_LINE_LEN,"Found %s in %s path. My TID is %d\n",it.name,path,getpid());
+    }else{
+        snprintf(massage,MAX_LINE_LEN,"NotFound in %s path. My TID is %d\n",new_path,getpid());
     }
-    FILE fptr;
-    //TOOD set address!
-    sem_wait(&log);
-    write_log();
-    sem_post(&log);
+
+    write_log(new_path,massage,log);
+    
     
 }
 
@@ -53,20 +67,66 @@ int check_forHit(userInfo *user,sem_t log,item it){
 /*
 Edit the file
 */
-void edit_file(FILE *fptr,int user_score,int user_wanted){
+void edit_file(char *path,double user_score,int user_wanted){
+    FILE *fptr;
+    fptr = fopen(path,"r+");
+    
+    int line_num=0;
+    char line[256];
+    double new_score;
+    while(fgets(line,sizeof(line),fptr)){
+        line_num++;
+        if(line_num ==3){
+            if(sscanf(line,"Score: %lf",&new_score)==1){
+                //Write a new score
+                new_score = (new_score + user_score)/2;
+                fseek(fptr,-strlen(line),SEEK_CUR);
+                fprintf(fptr,"Score: %.2f\n",new_score);
+
+            }else{
+                printf("ERROR: Something went wrong while changing score in file %s\n",path);
+            }
+        }
+        else if (line_num == 4){
+            int entity;
+            if(sscanf(line,"Entity: %d",&entity)==1){
+                //Write a new entity
+                entity-=user_wanted;
+                fseek(fptr,-strlen(line),SEEK_CUR);
+                fprintf(fptr,"Entity: %d\n",entity);
+
+            }else{
+                printf("ERROR: Something went wrong while changing Entity in file %s\n",path);
+            }
+
+        }else if (line_num ==6){
+            //Setting new time
+            time_t tick;
+            struct tm *timeinfo;
+
+            time(&tick);
+            timeinfo=localtime(&tick);
+
+            char new_time[30];
+            strftime(new_time,sizeof(new_time),"%Y-%m-%d %H:%M:%S",timeinfo);
+
+            fseek(fptr,-strlen(line),SEEK_CUR);
+            fprintf(fptr,"Last Modified: %s\n",new_time);
+        }
+    }
+    
+    fclose(fptr);
+
 
 }
 
 /*
 Writer Problem! Critical section
 */
-void writer_problem(char *path,sem_t sem_rw,int user_score,int user_wanted){
-    FILE *fptr;
+void writer_problem(char *path,sem_t sem_rw,double user_score,int user_wanted){
     sem_wait(&sem_rw);
     //Critical section
-    fptr = fopen(path,"r+");
-    edit_file(fptr,user_score,user_wanted);
-    fclose(fptr);
+    edit_file(path,user_score,user_wanted);
     //Exiting critical section
     sem_post(&sem_rw);
 
@@ -76,13 +136,13 @@ void writer_problem(char *path,sem_t sem_rw,int user_score,int user_wanted){
 /*
 Reader Problem! Critical section
 */
-int reader_problem(char *path, item &it,int &reader_count, 
+int reader_problem(char *path, item *it,int *reader_count, 
     sem_t sem_reader,sem_t sem_rw){
     FILE *fptr;
 
     sem_wait(&sem_reader);
-    reader_count++;
-    if(reader_count == 1)
+    *reader_count++;
+    if(*reader_count == 1)
         sem_wait(&sem_rw);
     sem_post(&sem_reader);
     
@@ -92,8 +152,8 @@ int reader_problem(char *path, item &it,int &reader_count,
     fclose(fptr);
     //Exit critical section
     sem_wait(&sem_reader);
-    reader_count--;
-    if(reader_count==0)
+    *reader_count--;
+    if(*reader_count==0)
         sem_post(&sem_rw);
     sem_post(&sem_reader);
     return entity;
@@ -101,22 +161,22 @@ int reader_problem(char *path, item &it,int &reader_count,
 }   
 
 //Returns entitiy!
-int extract_file(FILE *fptr,item &it){
+int extract_file(FILE *fptr,item *it){
     
     char *head = read_line(fptr);
     char * search= head + strcspn(head," ")+1;
-    strcpy(search,it.name);
+    strcpy(search,it->name);
     free(head);
 
 
     head = read_line(fptr);
     search = head + strcspn(head," ")+1;
-    it.price = atof(search);
+    it->price = atof(search);
     free(head);
 
     head = read_line(fptr);
     search = head + strcspn(head," ")+1;
-    it.score = atof(search);
+    it->score = atof(search);
     free(head);
 
 
