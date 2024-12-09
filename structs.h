@@ -1,3 +1,5 @@
+#include "semaphore.h"
+
 typedef struct
 {
     char name[64];
@@ -32,3 +34,9 @@ typedef struct {
     int read_fd;
     int write_fd;
 }pipes;
+
+typedef struct{
+    char *path;
+    userInfo *user;
+    sem_t log;
+}thread_args;

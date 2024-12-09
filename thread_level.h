@@ -21,12 +21,23 @@ int reader_problem(char *path, item *it,int *reader_count,
     sem_t sem_reader,sem_t sem_rw);
 int extract_file(FILE *fptr,item *it);
 char* read_line(FILE* fptr);
-
+void init_args(void *args);
 
 
 void main_thread(char *path,userInfo *usr, sem_t log){
-
+    
 }
+
+void init_args(void *args){
+
+    /*
+     Cast the args to thread_args and call main function.
+    */
+
+    thread_args *t =(thread_args *) args;
+    main_thread(t->path,t->user,t->log);
+}
+
 /*
 Write to log
 */

@@ -1,4 +1,4 @@
-- STasks:
+- Tasks:
 
   - [ ]  User level
 
@@ -28,8 +28,8 @@
     - [ ]  Wait for all threads (Termination!)
   - [ ]  Thread level
 
-    - [ ]  Read file and extract the item (RW problem)
-    - [ ]  Check if the item is in wanted list
+    - [X]  Read file and extract the item (RW problem)
+    - [X]  Check if the item is in wanted list
     - [ ]  Send data to upper level
     - [ ]  signal the upper level
     - [ ]  Wait for the upper level
