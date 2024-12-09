@@ -25,3 +25,8 @@ typedef struct
     item *items;
     int n;
 } recipt;
+
+typedef struct {
+    int read_fd;
+    int write_fd;
+}pipes;

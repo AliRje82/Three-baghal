@@ -8,7 +8,7 @@
     - [ ]  Check if already have shoped
     - [ ]  Create a thread to get scores from user
     - [X]  Send the result to lower level
-    - [ ]  Wait for all the process
+    - [X]  Wait for all the process
   - [ ]  Store level
 
     - [ ]  Create a process for each category
