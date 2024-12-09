@@ -28,3 +28,7 @@ typedef struct
 
 
 
+typedef struct {
+    int read_fd;
+    int write_fd;
+}pipes;
