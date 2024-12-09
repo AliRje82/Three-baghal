@@ -96,33 +96,42 @@ void user_level_process()
             create_pipe(p[p_no]);
             create_pipe(p[p_no + 1]);
             printf("Pipes created for directory %s\n", entry->d_name);
-            printf("Pipe%d read_fd %d and write_fd %d\n", p_no, p[p_no]->read_fd, p[p_no]->write_fd );
-            printf("Pipe%d read_fd %d and write_fd %d\n", p_no+1, p[p_no+1]->read_fd, p[p_no+1]->write_fd );
+            printf("Pipe%d read_fd %d and write_fd %d\n", p_no, p[p_no]->read_fd, p[p_no]->write_fd);
+            printf("Pipe%d read_fd %d and write_fd %d\n", p_no + 1, p[p_no + 1]->read_fd, p[p_no + 1]->write_fd);
             pid = fork();
-            if(pid < 0) {
+            if (pid < 0)
+            {
                 perror("Fork failed");
-                closedir(dir);
+                //closedir(dir);
                 return;
             }
-            else if(pid == 0) {
+            else if (pid == 0)
+            {
                 printf("child process %d handling directory %s\n", getpid(), full_path);
                 close(p[p_no]->read_fd);
                 close(p[p_no + 1]->write_fd);
                 store_process(p[p_no]->write_fd, p[p_no + 1]->read_fd, full_path);
+                // close(p[p_no]->write_fd);
+                // close(p[p_no + 1]->read_fd);
+                exit(0);
+            }
+            else
+            {
                 close(p[p_no]->write_fd);
                 close(p[p_no + 1]->read_fd);
-                exit(0);
-            }else {
-                close(p[p_no]->write_fd);
-                close(p[p_no]->read_fd);
-                char buffer[1024];
-                read(p[p_no]->read_fd, buffer,sizeof(buffer));
-                printf("Massage received from child %d\n", pid);
-                close(p[p_no]->read_fd);
-                close(p[p_no]->write_fd);
+                // char buffer[1024];
+                // read(p[p_no]->read_fd, buffer, sizeof(buffer));
+                // printf("Massage received from child %d\n", pid);
+                // close(p[p_no]->read_fd);
+                // close(p[p_no]->write_fd);
             }
             p_no += 2;
         }
+    }
+    for(int i = 0; i<6; i+=2) {
+         char buffer[1024];
+         read(p[i]->read_fd, buffer, sizeof(buffer));
+         printf("%s from pipe %d\n", buffer, i);
     }
     closedir(dir);
     free(groceries);

@@ -53,4 +53,14 @@ void main_store(char *path/*,TODO some pipe*/){
 
 void child_test(char *path){
     printf("Address that is given %s\n",path);
+
+
+void store_process (int write_fd, int read_fd, char *full_path) {
+    // char path [1024];
+    // read(read_fd, path, sizeof(path));
+    // printf("Store received path %s\n", full_path);
+    char response[] = "process complete";
+    write(write_fd, response, strlen(response)+1);
+    // printf("Store send massage %s\n", response);
+    // printf("%s\n",full_path);
 }
