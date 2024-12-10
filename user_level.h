@@ -1,3 +1,8 @@
+
+
+#ifndef USER_LEVEL_H
+#define USER_LEVEL_H
+
 #include "stdio.h"
 #include "structs.h"
 #include "store_level.h"
@@ -11,7 +16,7 @@
 
 const int grocery_no = 512;
 grocery *groceries;
-userInfo *user;
+extern userInfo *user;
 pipes *p[6];
 
 void create_pipe(pipes *p)
@@ -110,7 +115,7 @@ void user_level_process()
                 printf("child process %d handling directory %s\n", getpid(), full_path);
                 close(p[p_no]->read_fd);
                 close(p[p_no + 1]->write_fd);
-                store_process(p[p_no]->write_fd, p[p_no + 1]->read_fd, full_path);
+                //store_process(p[p_no]->write_fd, p[p_no + 1]->read_fd, full_path);
                 // close(p[p_no]->write_fd);
                 // close(p[p_no + 1]->read_fd);
                 exit(0);
@@ -139,3 +144,5 @@ void user_level_process()
     while (wait(NULL) > 0)
         ;
 }
+
+#endif

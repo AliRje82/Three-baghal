@@ -1,3 +1,5 @@
+#ifndef STRUCTS_H
+#define STRUCTS_H
 #include "semaphore.h"
 
 typedef struct
@@ -19,7 +21,7 @@ typedef struct
 {
     double score;
     double price;
-    char name[64];
+    char *name;
 } item;
 
 typedef struct
@@ -35,8 +37,5 @@ typedef struct {
     int write_fd;
 }pipes;
 
-typedef struct{
-    char *path;
-    userInfo *user;
-    sem_t log;
-}thread_args;
+
+#endif 

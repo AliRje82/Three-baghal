@@ -1,3 +1,6 @@
+#ifndef THREAD_LEVEL_H
+#define THREAD_LEVEL_H
+
 #include "stdio.h"
 #include "stdlib.h"
 #include "semaphore.h"
@@ -6,6 +9,7 @@
 #include "pthread.h"
 #include <unistd.h>
 #include <time.h>
+#include "user_level.h"
 
 #define SEM_MUTEX "/sem_reader_mutex"
 #define SEM_RW_MUTEX "/sem_rw_mutex"
@@ -14,7 +18,7 @@
 #define MAX_LINE_LEN 100
 
 void write_log(char *path,char *massage,sem_t log);
-int check_forHit(userInfo *user,sem_t log,item it,char *path);
+int check_forHit(sem_t log,item it,char *path);
 void edit_file(char *path,double user_score,int user_wanted);
 void writer_problem(char *path,sem_t sem_rw,double user_score,int user_wanted);
 int reader_problem(char *path, item *it,int *reader_count, 
@@ -24,7 +28,7 @@ char* read_line(FILE* fptr);
 void init_args(void *args);
 
 
-void main_thread(char *path,userInfo *usr, sem_t log){
+void main_thread(char *path){
     
 }
 
@@ -34,8 +38,8 @@ void init_args(void *args){
      Cast the args to thread_args and call main function.
     */
 
-    thread_args *t =(thread_args *) args;
-    main_thread(t->path,t->user,t->log);
+    char *path =(char *) args;
+    main_thread(path);
 }
 
 /*
@@ -51,10 +55,11 @@ void write_log(char *path,char *massage,sem_t log){
     sem_post(&log);
     //Exiting critical section
 }
+
 /*
 Check For hit!
 */
-int check_forHit(userInfo *user,sem_t log,item it,char *path){
+int check_forHit(sem_t log,item it,char *path){
     int i=0;
     for(i = 0; i < user->n; i++)
     {
@@ -215,3 +220,4 @@ char* read_line(FILE* fptr){
         return NULL;
     }
 }
+#endif

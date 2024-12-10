@@ -2,17 +2,20 @@
 #include "stdlib.h"
 #include "string.h"
 #include "structs.h"
+#ifndef ENCODING_H
+#define ENCODING_H
 
 #define MAX_ITEM_SIZE 32
 
-recipt *decode(char *str,int n){
+recipt *decode(char *str){
     recipt *rcpt = (recipt *) malloc(sizeof(recipt));
-    rcpt->n=n;
-    rcpt->items = (item *)malloc(n * sizeof(item));
     char *search=strtok(str,",");
-    for (int i = 0; i < n; i++)
+    rcpt->n = atoi(search);
+    rcpt->items = (item *)malloc(rcpt->n * sizeof(item));
+    search=strtok(NULL,",");
+    for (int i = 0; i < rcpt->n; i++)
     {   
-        strcpy(search,rcpt->items[i].name);
+        rcpt->items[i].name=search;
         search = strtok(NULL, ",");
         rcpt->items[i].score=atof(search);
         search = strtok(NULL, ",");
@@ -28,7 +31,7 @@ recipt *decode(char *str,int n){
 char *encode(recipt *rcpt){
 
     char *massage = (char *)malloc(MAX_ITEM_SIZE * rcpt->n);
-    massage[0]='\0';
+    sprintf(massage,"%d,",rcpt->n);
     for (int i = 0; i < rcpt->n; i++)
     {
         
@@ -47,3 +50,4 @@ char *encode(recipt *rcpt){
     
 }
 
+#endif
