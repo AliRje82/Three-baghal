@@ -10,42 +10,48 @@
 #include <unistd.h>
 #include <time.h>
 #include "user_level.h"
+#include "category_level.h"
 
-#define SEM_MUTEX "/sem_reader_mutex"
-#define SEM_RW_MUTEX "/sem_rw_mutex"
+#define SEM_MUTEX "/sem_mutex"
+#define SEM_WRITER "/sem_writer"
+#define SEM_QUEUE "/sem_queue"
 #define SHARED_INT_COUNT "/shared_memory"
 #define SHARED_MEM_SIZE sizeof(int)
 #define MAX_LINE_LEN 100
 
-void write_log(char *path,char *massage,sem_t log);
-int check_forHit(sem_t log,item it,char *path);
+/*
+Function defines:
+*/
+void write_log(char *path,char *massage);
+int check_forHit(item it,char *path);
 void edit_file(char *path,double user_score,int user_wanted);
-void writer_problem(char *path,sem_t sem_rw,double user_score,int user_wanted);
+void writer_problem(char *path,sem_t queue,sem_t write,double user_score,int user_wanted);
 int reader_problem(char *path, item *it,int *reader_count, 
-    sem_t sem_reader,sem_t sem_rw);
+    sem_t mutex,sem_t write,sem_t queue);
 int extract_file(FILE *fptr,item *it);
 char* read_line(FILE* fptr);
-void init_args(void *args);
+void runner(void *args);
 
 
-void main_thread(char *path){
+void main_thread(char *path,sem_t mutex,sem_t write,sem_t queue,int *reader_count){
+
+
     
 }
 
-void init_args(void *args){
+void runner(void *args){
 
     /*
      Cast the args to thread_args and call main function.
     */
-
     char *path =(char *) args;
-    main_thread(path);
+    //main_thread(path); TODO pass the other semaphores!
 }
 
 /*
 Write to log
 */
-void write_log(char *path,char *massage,sem_t log){
+void write_log(char *path,char *massage){
     FILE *fptr;
     sem_wait(&log);
     //Entring critical section
@@ -59,7 +65,7 @@ void write_log(char *path,char *massage,sem_t log){
 /*
 Check For hit!
 */
-int check_forHit(sem_t log,item it,char *path){
+int check_forHit(item it,char *path){
     int i=0;
     for(i = 0; i < user->n; i++)
     {
@@ -74,7 +80,7 @@ int check_forHit(sem_t log,item it,char *path){
         snprintf(massage,MAX_LINE_LEN,"NotFound in %s path. My TID is %d\n",new_path,getpid());
     }
 
-    write_log(new_path,massage,log);
+    write_log(new_path,massage);
     
     
 }
@@ -139,12 +145,14 @@ void edit_file(char *path,double user_score,int user_wanted){
 /*
 Writer Problem! Critical section
 */
-void writer_problem(char *path,sem_t sem_rw,double user_score,int user_wanted){
-    sem_wait(&sem_rw);
+void writer_problem(char *path,sem_t queue,sem_t write,double user_score,int user_wanted){
+    sem_wait(&queue);
+    sem_wait(&write);
     //Critical section
     edit_file(path,user_score,user_wanted);
     //Exiting critical section
-    sem_post(&sem_rw);
+    sem_post(&write);
+    sem_post(&queue);
 
 }
 
@@ -153,25 +161,27 @@ void writer_problem(char *path,sem_t sem_rw,double user_score,int user_wanted){
 Reader Problem! Critical section
 */
 int reader_problem(char *path, item *it,int *reader_count, 
-    sem_t sem_reader,sem_t sem_rw){
+    sem_t mutex,sem_t write,sem_t queue){
     FILE *fptr;
 
-    sem_wait(&sem_reader);
+    sem_wait(&queue);
+    sem_wait(&mutex);
     *reader_count++;
     if(*reader_count == 1)
-        sem_wait(&sem_rw);
-    sem_post(&sem_reader);
+        sem_wait(&write);
+    sem_post(&mutex);
+    sem_post(&queue);
     
     //CRITICAL!
     fptr = fopen(path,"r");
     int entity = extract_file(fptr,it);
     fclose(fptr);
     //Exit critical section
-    sem_wait(&sem_reader);
+    sem_wait(&mutex);
     *reader_count--;
     if(*reader_count==0)
-        sem_post(&sem_rw);
-    sem_post(&sem_reader);
+        sem_post(&write);
+    sem_post(&mutex);
     return entity;
 
 }   

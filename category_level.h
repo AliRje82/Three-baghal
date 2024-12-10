@@ -4,6 +4,7 @@
 #include "structs.h"
 extern sem_t log;
 extern sem_t put_result;
+extern sem_t wait;
 extern recipt rcpt;
 
 
