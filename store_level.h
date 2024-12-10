@@ -55,24 +55,32 @@ void main_store(int write_fd, int read_fd,char *path){
     for ( i = 0; i < 16; i+=2)
         read(p[i].read_fd, massages[i],sizeof(massages[i]));
     
-    /*
-    TODO Merge data!
-    */
+    //Get the data and merge!
+    recipt *result;
+    result = merge_result(massages,user->n);
     
+    char *result = encode(result);
 
     /*
-    TODO Sending data to upper level
+    *Sending data to Upper level
     */
-   
-    /*
-    TODO Wait for upper level
-    */
+    write(write_fd,result,strlen(result)+1);
 
     /*
-    TODO send data to upper level
+    * Wait for upper level
     */
+    char final_result[MAX_BUFFER_SIZE];
+    read(read_fd,final_result,MAX_BUFFER_SIZE);
 
-    /*Waiting to terminate all Childs!*/
+    /*
+    *send data to Lower level
+    */
+    for ( i = 0; i < 16; i+=2)
+        read(p[i+1].write_fd, final_result,sizeof(final_result));
+
+    /* 
+    *Waiting to terminate all Childs!
+    */
     while (wait(NULL)>0);
     
     
@@ -92,7 +100,7 @@ void child_test(int write_fd, int read_fd,char *path){
 //     // printf("Store send massage %s\n", response);
 //     // printf("%s\n",full_path);
 // }
-recipt *merge_(char massage[8][MAX_BUFFER_SIZE],int n){
+recipt *merge_result(char massage[8][MAX_BUFFER_SIZE],int n){
     recipt **arr=(recipt **)malloc(8*sizeof(recipt*));
     for (int i = 0; i < 8; i++)
     {

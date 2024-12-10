@@ -12,12 +12,12 @@
   - [ ]  Store level
 
     - [X]  Create a process for each category
-    - [ ]  Wait for the lower level result
-    - [ ]  Merge the result to a final result
-    - [ ]  Send result to upper level
-    - [ ]  Wait for the upper level result
-    - [ ]  Send result to lower level
-    - [ ]  Wait for all the process
+    - [X]  Wait for the lower level result
+    - [X]  Merge the result to a final result
+    - [X]  Send result to upper level
+    - [X]  Wait for the upper level result
+    - [X]  Send result to lower level
+    - [X]  Wait for all the process
   - [ ]  Category level
 
     - [ ]  Create mutex locks that is shared between processes (mmap)
