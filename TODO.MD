@@ -27,15 +27,15 @@
     - [ ]  Send the result
     - [ ]  Wait for the end result!
     - [ ]  Wait for all threads (Termination!)
-  - [ ]  Thread level
+  - [X]  Thread level
 
     - [X]  Read file and extract the item (RW problem)
     - [X]  Check if the item is in wanted list
-    - [ ]  Send data to upper level ( Need mutex lock for putting the result )
-    - [ ]  signal the upper level
-    - [ ]  Wait for the upper level
-    - [ ]  See the message, change entity and modify the file (RW problem)
-    - [ ]  Termination
+    - [X]  Send data to upper level ( Need mutex lock for putting the result )
+    - [X]  signal the upper level
+    - [X]  Wait for the upper level
+    - [X]  See the message, change entity and modify the file (RW problem)
+    - [X]  Termination
   - [X]  Structs:
 
     - [X]  Adding encode and decode for bottom up

@@ -23,7 +23,7 @@
 Function defines:
 */
 void write_log(char *path,char *massage);
-int check_forHit(item it,char *path);
+int check_forHit(item *it,char *path);
 void edit_file(char *path,double user_score,int user_wanted);
 void writer_problem(char *path,sem_t queue,sem_t write,double user_score,int user_wanted);
 int reader_problem(char *path, item *it,int *reader_count, 
@@ -34,12 +34,62 @@ void runner(void *args);
 
 
 void main_thread(char *path,sem_t mutex,sem_t write,sem_t queue,int *reader_count){
+   item it;
+   
+   /*
+   * Read the file!
+   */
+   int entity = reader_problem(path,&it,&reader_count,mutex,write,queue);
+   
+    /*
+    * Check to see if it is in the list
+    */
+
+   int hit=check_forHit(&it,path);
+
+   if (hit == -1 || entity < user->groceries[hit].count){
+    /*
+    ! Check to see if we have enough!
+    */
+
+    printf("LOG: NO hit in this thread!\n");
+    // TODO: Terminate the thread!
+    sem_post(&sem_process);
+    sem_wait(&sem_thread);
+
+    return;
+   }
+    //*Putting the new result!
+    sem_wait(&put_result);
+    //!Critical section
+    rcpt.items[rcpt.n++]=it;
+    sem_post(&put_result);
+
+    sem_post(&sem_process);
+    sem_wait(&sem_thread);
+
+    //*Checking for final massage
+    if(strcpm(end_massage,SUCCESS)==0){
+        //*Means Succed so we need to update file
+        writer_problem(path,queue,write,scores[hit],user->groceries[hit].count);
+        return;
+    }
+    return;
+
+    
+   
+
+
 
 
     
 }
 
 void runner(void *args){
+
+    /*
+    TODO: Read the Mutex from shared memory!
+    */
 
     /*
      Cast the args to thread_args and call main function.
@@ -65,23 +115,27 @@ void write_log(char *path,char *massage){
 /*
 Check For hit!
 */
-int check_forHit(item it,char *path){
+int check_forHit(item *it,char *path){
     int i=0;
     for(i = 0; i < user->n; i++)
     {
-        if(strcmp(it.name,user->groceries->name)==0) break;
+        if(strcmp(it->name,user->groceries->name)==0) break;
     }
     char massage[MAX_LINE_LEN];
     char new_path[MAX_LINE_LEN];
     snprintf(new_path,MAX_LINE_LEN,"%s/USER%d_ORDERID%d.log",path,user->user_id,user->order_id);
     if(i < user->n){
-        snprintf(massage,MAX_LINE_LEN,"Found %s in %s path. My TID is %d\n",it.name,path,getpid());
+        
+        snprintf(massage,MAX_LINE_LEN,"Found %s in %s path. My TID is %d\n",it->name,path,getpid());
     }else{
+        i=-1;
         snprintf(massage,MAX_LINE_LEN,"NotFound in %s path. My TID is %d\n",new_path,getpid());
     }
 
     write_log(new_path,massage);
     
+    
+    return i;
     
 }
 
@@ -191,7 +245,7 @@ int extract_file(FILE *fptr,item *it){
     
     char *head = read_line(fptr);
     char * search= head + strcspn(head," ")+1;
-    strcpy(search,it->name);
+    strcpy(it->name,search);
     free(head);
 
 
