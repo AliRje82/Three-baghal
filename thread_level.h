@@ -66,7 +66,7 @@ void main_thread(char *path,sem_t *mutex,sem_t *write,sem_t *queue,int *reader_c
     //*Putting the new result!
     sem_wait(put_result);
     //!Critical section
-    rcpt.items[rcpt.n++]=it;
+    rcpt->items[(rcpt->n)++]=it;
     sem_post(put_result);
 
     sem_post(sem_process);
