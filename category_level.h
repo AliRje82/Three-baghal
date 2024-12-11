@@ -13,10 +13,10 @@
 #define TERMINATION "TERMINATE"
 #define SUCCESS "SUCCESS"
 
-sem_t log;        // 1 when write in log file which is shared among thread
-sem_t put_result; // 1 when write in rcpt which is shared among thread
-sem_t sem_process;
-sem_t sem_thread;
+sem_t *log;        // 1 when write in log file which is shared among thread
+sem_t *put_result; // 1 when write in rcpt which is shared among thread
+sem_t *sem_process;
+sem_t *sem_thread;
 recipt *rcpt;
 char *end_massage;
 double *scores;
@@ -37,12 +37,12 @@ void category_level_thread(int write_fd, int read_fd, char *path)
     pthread_t thread[100];
     int thread_count = 0;
     char file_path[max_size];
-    if (sem_init(&sem_process, 0, 0) != 0)
+    if (sem_init(sem_process, 0, 0) != 0)
     {
         perror("Create sem process failed");
         return;
     }
-    if (sem_init(&sem_thread, 0, 0) != 0)
+    if (sem_init(sem_thread, 0, 0) != 0)
     {
         perror("Create sem thread failed");
         return;
@@ -81,7 +81,7 @@ void category_level_thread(int write_fd, int read_fd, char *path)
     closedir(dir);
     for (int i = 0; i < thread_count; i++)
     {
-        sem_wait(&sem_process);
+        sem_wait(sem_process);
     }
     msg = encode(rcpt);
     write(write_fd, msg, strlen(msg) + 1);
@@ -90,7 +90,7 @@ void category_level_thread(int write_fd, int read_fd, char *path)
     scores = decode(buffer);
     for (int i = 0; i < thread_count; i++)
     {
-        sem_post(&sem_thread);
+        sem_post(sem_thread);
     }
     if(strlen(scores) == 0) {
         end_massage = TERMINATION;
