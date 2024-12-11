@@ -15,6 +15,7 @@
 #define MAX_BUFFER_SIZE 1024
 
 void child_test(int write_fd, int read_fd,char *path);
+recipt *merge_result(char massage[8][MAX_BUFFER_SIZE],int n);
 
 void main_store(int write_fd, int read_fd,char *path){
     struct dirent *dp;
@@ -56,15 +57,15 @@ void main_store(int write_fd, int read_fd,char *path){
         read(p[i].read_fd, massages[i],sizeof(massages[i]));
     
     //Get the data and merge!
-    recipt *result;
-    result = merge_result(massages,user->n);
+    recipt *r;
+    r = merge_result(massages,user->n);
     
-    char *result = encode(result);
+    char *result_msg = encode(r);
 
     /*
     *Sending data to Upper level
     */
-    write(write_fd,result,strlen(result)+1);
+    write(write_fd,result_msg,strlen(result_msg)+1);
 
     /*
     * Wait for upper level
@@ -91,15 +92,8 @@ void child_test(int write_fd, int read_fd,char *path){
     printf("Address that is given %s\n",path);
 }
 
-// void store_process (int write_fd, int read_fd, char *full_path) {
-//     // char path [1024];
-//     // read(read_fd, path, sizeof(path));
-//     // printf("Store received path %s\n", full_path);
-//     char response[] = "process complete";
-//     write(write_fd, response, strlen(response)+1);
-//     // printf("Store send massage %s\n", response);
-//     // printf("%s\n",full_path);
-// }
+
+
 recipt *merge_result(char massage[8][MAX_BUFFER_SIZE],int n){
     recipt **arr=(recipt **)malloc(8*sizeof(recipt*));
     for (int i = 0; i < 8; i++)
