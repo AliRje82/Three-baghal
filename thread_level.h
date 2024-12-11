@@ -6,7 +6,6 @@
 #include "semaphore.h"
 #include "string.h"
 #include "structs.h"
-#include "pthread.h"
 #include <unistd.h>
 #include <time.h>
 #include "user_level.h"
@@ -14,6 +13,7 @@
 #include "sys/mman.h"
 #include "sys/stat.h"
 #include "fcntl.h"
+#include "pthread.h"
 
 
 #define SEM_MUTEX "/sem_mutex"
