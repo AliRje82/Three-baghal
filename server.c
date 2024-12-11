@@ -7,6 +7,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "unistd.h"
+#include "user_level.h"
 
 #define SEM_MUTEX "/sem_mutex"
 #define SEM_WRITER "/sem_writer"
@@ -18,6 +19,16 @@
 
 void init_semaphores();
 void clean_up();
+
+
+
+int main(){
+    init_semaphores();
+    
+    user_level_process();
+
+    clean_up();
+}
 
 void init_semaphores(){
     char buffer[1024];
@@ -67,7 +78,7 @@ void init_semaphores(){
 
 }
 
-void cleanup(){
+void clean_up(){
     char buffer[1024];
 
     for (int i = 1; i <= MAX_STORES; i++)
