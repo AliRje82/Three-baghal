@@ -105,7 +105,7 @@ void runner(void *args){
         /*
         *Opening the mutex
         */
-        sprintf(&shared_addr,"%s%d%d",SEM_MUTEX,store_num,file_num);
+        sprintf(shared_addr,"%s%d%d",SEM_MUTEX,store_num,file_num);
         sem_t *mutex = sem_open(shared_addr,0);
         if(mutex == SEM_FAILED){
             printf("Coudnot open mutex\n");
@@ -115,9 +115,9 @@ void runner(void *args){
         /*
         *Openning the writer!
         */
-        sprintf(&shared_addr,"%s%d%d",SEM_WRITER,store_num,file_num);
+        sprintf(shared_addr,"%s%d%d",SEM_WRITER,store_num,file_num);
         sem_t *writer = sem_open(shared_addr,0);
-        if(write == SEM_FAILED){
+        if(writer == SEM_FAILED){
             printf("ERROR: Couldnot open wirter\n");
             return;
         }
@@ -125,9 +125,9 @@ void runner(void *args){
         /*
         *Openning the Queue!
         */
-        sprintf(&shared_addr,"%s%d%d",SEM_QUEUE,store_num,file_num);
+        sprintf(shared_addr,"%s%d%d",SEM_QUEUE,store_num,file_num);
         sem_t *queue = sem_open(shared_addr,0);
-        if(write == SEM_FAILED){
+        if(queue == SEM_FAILED){
             printf("ERROR: Couldnot open Queue\n");
             return;
         }
@@ -135,7 +135,7 @@ void runner(void *args){
         /*
         *Openning the Shared memory!
         */
-        sprintf(&shared_addr,"%s%d%d",SHARED_INT_COUNT,store_num,file_num);
+        sprintf(shared_addr,"%s%d%d",SHARED_INT_COUNT,store_num,file_num);
         int shm_flg=shm_open(shared_addr,O_RDWR,0666);
         if(shm_flg == -1){
             perror("shm_open");
@@ -143,7 +143,7 @@ void runner(void *args){
             return;
         }
 
-        int *reader_count = mmap(NULL,SHARED_MEM_SIZE,
+        int *reader_count =(int *) mmap(NULL,SHARED_MEM_SIZE,
         PROT_READ | PROT_WRITE,MAP_SHARED,shm_flg,0);
 
         if(reader_count == MAP_FAILED){
@@ -152,7 +152,7 @@ void runner(void *args){
             return;
         }
         
-        main_thread(path,mutex,write,queue,reader_count);
+        main_thread(path,mutex,writer,queue,reader_count);
         
     }else
     {

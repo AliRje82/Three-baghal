@@ -34,19 +34,19 @@ void init_semaphores(){
             /*
             ! init semaphores
             */
-            sprintf(&buffer,"%s%d%d",SEM_MUTEX,i,j);
+            sprintf(buffer,"%s%d%d",SEM_MUTEX,i,j);
             mutex = sem_open(buffer,O_CREAT,0644,1);
 
-            sprintf(&buffer,"%s%d%d",SEM_WRITER,i,j);
+            sprintf(buffer,"%s%d%d",SEM_WRITER,i,j);
             writer = sem_open(buffer,O_CREAT,0644,1);
 
-            sprintf(&buffer,"%s%d%d",SEM_QUEUE,i,j);
+            sprintf(buffer,"%s%d%d",SEM_QUEUE,i,j);
             queue = sem_open(buffer,O_CREAT,0644,1);
 
             /*
             ! init Shared memory
             */
-            sprintf(&buffer,"%s%d%d",SHARED_INT_COUNT,i,j);
+            sprintf(buffer,"%s%d%d",SHARED_INT_COUNT,i,j);
             shmd = shm_open(buffer,O_CREAT|O_RDWR,0666);
             if(ftruncate(shmd,SHARED_MEM_SIZE)==-1){
                 printf("ERROR\n");
@@ -74,13 +74,13 @@ void cleanup(){
     {
         for (int j = 1; j <= MAX_ITEMS; j++)
         { 
-            sprintf(&buffer,"%s%d%d",SEM_MUTEX,i,j);
+            sprintf(buffer,"%s%d%d",SEM_MUTEX,i,j);
             sem_unlink(buffer);
 
-            sprintf(&buffer,"%s%d%d",SEM_WRITER,i,j);
+            sprintf(buffer,"%s%d%d",SEM_WRITER,i,j);
             sem_unlink(buffer);
 
-            sprintf(&buffer,"%s%d%d",SEM_QUEUE,i,j);
+            sprintf(buffer,"%s%d%d",SEM_QUEUE,i,j);
             sem_unlink(buffer);
 
         }
