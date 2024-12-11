@@ -16,7 +16,7 @@
 
 const int grocery_no = 512;
 grocery *groceries;
-extern userInfo *user;
+userInfo *user;
 pipes *p[6];
 
 void create_pipe(pipes *p)
