@@ -16,7 +16,7 @@
 
 const int grocery_no = 512;
 grocery *groceries;
-extern userInfo *user;
+userInfo *user;
 pipes *p[6];
 
 void create_pipe(pipes *p)
@@ -69,7 +69,6 @@ void user_level_process()
 {
     const char *path = "./Dataset";
     DIR *dir = opendir(path);
-    ;
     char full_path[1024];
 
     if (dir == NULL)
@@ -96,8 +95,8 @@ void user_level_process()
         }
         if (S_ISDIR(statbuf.st_mode))
         {
-            p[p_no] = malloc(sizeof(pipes));
-            p[p_no + 1] = malloc(sizeof(pipes));
+            p[p_no] = (pipes *)malloc(sizeof(pipes));
+            p[p_no + 1] = (pipes *)malloc(sizeof(pipes));
             create_pipe(p[p_no]);
             create_pipe(p[p_no + 1]);
             printf("Pipes created for directory %s\n", entry->d_name);

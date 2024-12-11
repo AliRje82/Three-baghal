@@ -1,7 +1,8 @@
 #include "stdio.h"
-#include "user_level.h"
+#include "category_level.h"
 
 int main() {
-    user_level_process();
+    char *path = "./Dataset/Store1/Apparel";
+    category_level_thread(path);
     return 0;
 }

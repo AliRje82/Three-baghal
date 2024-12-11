@@ -20,11 +20,11 @@
     - [X]  Wait for all the process
   - [ ]  Category level
 
-    - [ ]  Create mutex locks that is shared between processes (mmap)
-    - [ ]  Create a mutex lock that is shared in self process
-    - [ ]  Create thread for each file
-    - [ ]  Wait for the results! ( Semaphore init to 0)
-    - [ ]  Send the result
+    - [X]  Create mutex locks that is shared between processes (mmap)
+    - [X]  Create a mutex lock that is shared in self process
+    - [X]  Create thread for each file
+    - [X]  Wait for the results! ( Semaphore init to 0)
+    - [X]  Send the result
     - [ ]  Wait for the end result!
     - [ ]  Wait for all threads (Termination!)
   - [X]  Thread level

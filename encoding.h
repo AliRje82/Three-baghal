@@ -24,9 +24,7 @@ recipt *decode(char *str){
         search = strtok(NULL, ",");
     }
 
-    return rcpt;
-    
-    
+    return rcpt;    
 }
 
 char *encode(recipt *rcpt){
