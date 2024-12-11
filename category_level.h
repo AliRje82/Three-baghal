@@ -9,12 +9,13 @@
 #include "pthread.h"
 #include "sys/stat.h"
 #include "sys/types.h"
+#include "thread_level.h"
 
 #define TERMINATION "TERMINATE"
 #define SUCCESS "SUCCESS"
 
-sem_t *log;        // 1 when write in log file which is shared among thread
-sem_t *put_result; // 1 when write in rcpt which is shared among thread
+sem_t *log;     
+sem_t *put_result; 
 sem_t *sem_process;
 sem_t *sem_thread;
 recipt *rcpt;
@@ -47,7 +48,16 @@ void category_level_thread(int write_fd, int read_fd, char *path)
         perror("Create sem thread failed");
         return;
     }
-
+    if (sem_init(log, 0, 1) != 0)
+    {
+        perror("Create sem log failed");
+        return;
+    }
+    if (sem_init(put_result, 0, 1) != 0)
+    {
+        perror("Create sem put_result failed");
+        return;
+    }
     printf("open %s\n", path);
     DIR *dir = opendir(path);
     if (dir == NULL)
@@ -66,7 +76,7 @@ void category_level_thread(int write_fd, int read_fd, char *path)
             {
                 if (strstr(entry->d_name, ".txt") != NULL)
                 {
-                    if (pthread_create(&thread[thread_count], NULL, file_process, file_path) != 0)
+                    if (pthread_create(&thread[thread_count], NULL, runner, file_path) != 0)
                     {
                         perror("Failed to create a thread\n");
                     }
