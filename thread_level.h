@@ -60,10 +60,8 @@ void main_thread(char *path,sem_t *mutex,sem_t *write,sem_t *queue,int *reader_c
     /*
     * Check to see if it is in the list
     */
-   char *new_path = copy(path);
-   int slash = strrchr(new_path,'/')-new_path;
-   new_path[slash]='\0';
-   int hit=check_forHit(&it,new_path);
+   
+   int hit=check_forHit(&it,path);
    if (hit == -1 || entity < user->groceries[hit].count){
     /*
     ! Check to see if we have enough!
@@ -200,9 +198,12 @@ int check_forHit(item *it,char *path){
     {
         if(strcmp(it->name,user->groceries[i].name)==0) break;
     }
+    char *new_p = copy(path);
+    int slash = strrchr(new_p,'/')-new_p;
+    new_p[slash]='\0';
     char massage[MAX_LINE_LEN];
     char new_path[MAX_LINE_LEN];
-    snprintf(new_path,MAX_LINE_LEN,"%s/USER%d_ORDERID%d.log",path,user->user_id,user->order_id);
+    snprintf(new_path,MAX_LINE_LEN,"%s/USER%d_ORDERID%d.log",new_p,user->user_id,user->order_id);
 
     if(i < user->n){
         
