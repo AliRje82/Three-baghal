@@ -109,7 +109,7 @@ void runner(void *args){
         sem_t *mutex = sem_open(shared_addr,0);
         if(mutex == SEM_FAILED){
             printf("Coudnot open mutex\n");
-            return;
+            pthread_exit(0);
         }
 
         /*
@@ -119,7 +119,7 @@ void runner(void *args){
         sem_t *writer = sem_open(shared_addr,0);
         if(writer == SEM_FAILED){
             printf("ERROR: Couldnot open wirter\n");
-            return;
+            pthread_exit(0);
         }
 
         /*
@@ -129,7 +129,7 @@ void runner(void *args){
         sem_t *queue = sem_open(shared_addr,0);
         if(queue == SEM_FAILED){
             printf("ERROR: Couldnot open Queue\n");
-            return;
+            pthread_exit(0);
         }
 
         /*
@@ -140,7 +140,7 @@ void runner(void *args){
         if(shm_flg == -1){
             perror("shm_open");
             printf("ERROR: couldnot open shared memory!\n");
-            return;
+            pthread_exit(0);
         }
 
         int *reader_count =(int *) mmap(NULL,SHARED_MEM_SIZE,
@@ -149,15 +149,16 @@ void runner(void *args){
         if(reader_count == MAP_FAILED){
             perror("mmap");
             printf("ERROR: Couldnot open reader_count!\n");
-            return;
+            pthread_exit(0);
         }
         
-        main_thread(path,mutex,writer,queue,reader_count);
-        
+        main_thread(path,mutex,writer,queue,reader_count); 
     }else
     {
         printf("Something went wrong in thread processing!\n");
     }
+    pthread_exit(0);
+
     
 }
 

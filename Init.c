@@ -17,7 +17,10 @@
 #define MAX_STORES 3
 
 void init_semaphores();
-void clean_up();
+
+int main(){
+    init_semaphores();
+}
 
 void init_semaphores(){
     char buffer[1024];
@@ -64,27 +67,5 @@ void init_semaphores(){
         
     }
     
-
-}
-
-void cleanup(){
-    char buffer[1024];
-
-    for (int i = 1; i <= MAX_STORES; i++)
-    {
-        for (int j = 1; j <= MAX_ITEMS; j++)
-        { 
-            sprintf(buffer,"%s%d%d",SEM_MUTEX,i,j);
-            sem_unlink(buffer);
-
-            sprintf(buffer,"%s%d%d",SEM_WRITER,i,j);
-            sem_unlink(buffer);
-
-            sprintf(buffer,"%s%d%d",SEM_QUEUE,i,j);
-            sem_unlink(buffer);
-
-        }
-        
-    }
 
 }
