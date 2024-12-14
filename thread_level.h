@@ -89,12 +89,12 @@ void main_thread(char *path,sem_t *mutex,sem_t *write,sem_t *queue,int *reader_c
     
 }
 
-void runner(void *args){
+void *runner(void *args){
 
     /*
      Cast the args to thread_args and call main function.
     */
-    char *path =(char *) args;
+    char *path = (char *) args;
     int store_num;
     int file_num;
 
