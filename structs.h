@@ -26,7 +26,7 @@ typedef struct
 
 typedef struct
 {
-    item *items;
+    item **items;
     int n;
 } recipt;
 

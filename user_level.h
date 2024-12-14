@@ -14,6 +14,7 @@
 #include "sys/stat.h"
 #include "unistd.h"
 #include "pthread.h"
+#include "time.h"
 
 const int grocery_no = 512;
 grocery *groceries;
@@ -49,7 +50,7 @@ void user_input()
     user->user_id = atoi(token);
     printf("DEBUG user_id: %d\n", user->user_id);
     free(username);
-
+    int counter = 0;
     printf("OrderList(press e/E if finish)%d: \n", user->order_id);
     for (int i = 0; i < grocery_no; i++)
     {
@@ -60,9 +61,10 @@ void user_input()
         }
         printf("Number of %s: ", groceries[i].name);
         scanf("%d", &groceries[i].count);
-        user->n += groceries[i].count;
+        counter++;
         printf("DEBUG grocery name, count and user total count: %s %d %d\n", groceries[i].name, groceries[i].count, user->n);
     }
+    user->n = counter;
     user->groceries = groceries;
     user->order_id++;
 
@@ -74,21 +76,29 @@ void user_input()
 void *collect_scores(void *arg)
 {
     data* d = (data*)arg;
-    printf("%d", d->max_store);
-    double scores [user->n];
-    char m = "\0";
+    printf("%d\n", d->max_store);
+    double *scores = malloc(sizeof(double) * user->n);
+    char *m ="1";
 
-    printf("Please enter you score for each items");
+    printf("Please enter you score for each items\n");
+    printf("%s\n", user->groceries[0].name);
     for (int i = 0; i < user->n; i++)
     {
-        printf("Score: ");
-        scanf("%lf", &scores[i]);
-    }
-    for(int i = 0; i<6; i+=2) {
-        if(i == d->max_pipe) {
-            write(p[d->max_pipe]->write_fd, scores, user->n);
+        printf("Score for item %s:", user->groceries[i].name);
+        if(scanf("%lf", &scores[i])==-1){
+            printf("Error\n");
         }
-        write(p[i]->write_fd, m, strlen(m)+1);
+        printf("%lf",scores[i]);
+    }
+    printf("Sending the result\n");
+    char *str;
+    for(int i = 1; i<6; i+=2) {
+        if(i == d->max_pipe) {
+            str = encode_score(scores,user->n);
+            write(p[d->max_pipe]->write_fd, str,strlen(str)+1);
+        } else {
+            write(p[i]->write_fd, m, strlen(m)+1);
+        }
     }
     pthread_exit(NULL);
 }
@@ -110,48 +120,48 @@ void get_score(recipt **rcpt)
 
     for (int i = 0; i < rcpt[0]->n; i++)
     {
-        score1 += rcpt[0]->items[i].score * rcpt[0]->items[i].price;
-        price1 += rcpt[0]->items[i].price;
+        score1 += rcpt[0]->items[i]->score * rcpt[0]->items[i]->price;
+        price1 += rcpt[0]->items[i]->price;
     }
     score1 /= rcpt[0]->n;
 
     for (int i = 0; i < rcpt[1]->n; i++)
     {
-        score2 += rcpt[1]->items[i].score * rcpt[1]->items[i].price;
-        price2 += rcpt[1]->items[i].price;
+        score2 += rcpt[1]->items[i]->score * rcpt[1]->items[i]->price;
+        price2 += rcpt[1]->items[i]->price;
     }
     score2 /= rcpt[1]->n;
 
     for (int i = 0; i < rcpt[2]->n; i++)
     {
-        score3 += rcpt[2]->items[i].score * rcpt[2]->items[i].price;
-        price3 += rcpt[2]->items[i].price;
+        score3 += rcpt[2]->items[i]->score * rcpt[2]->items[i]->price;
+        price3 += rcpt[2]->items[i]->price;
     }
-    score3 /= rcpt[3]->n;
+    score3 /= rcpt[2]->n;
 
     if (score1 > score2)
     {
         max_score = score1;
         max_price = price1;
         d->max_store = 1;
-        d->max_pipe = 0;
+        d->max_pipe = 1;
     }
     else
     {
         max_score = score2;
         max_price = price2;
         d->max_store = 2;
-        d->max_pipe = 2;
+        d->max_pipe = 3;
     }
     if (score3 > max_score)
     {
         max_score = score3;
         max_price = price3;
         d->max_store = 3;
-        d->max_pipe = 4;
+        d->max_pipe = 5;
     }
 
-    if (max_price > user->budget)
+    if (max_price > user->budget && user->budget != (-1))
     {
         printf("The price of the item (%lf) are beyond your budget (%lf)....You can not buy these stuffs\n", max_price, user->budget);
         return;
@@ -169,7 +179,10 @@ void get_score(recipt **rcpt)
 
 void user_level_process()
 {
+    user_input();
     const char *path = "./Dataset";
+    printf("%s\n",user->groceries[0].name);
+
     DIR *dir = opendir(path);
     char full_path[1024];
 
@@ -214,8 +227,10 @@ void user_level_process()
             else if (pid == 0)
             {
                 printf("child process %d handling directory %s\n", getpid(), full_path);
+                
                 close(p[p_no]->read_fd);
                 close(p[p_no + 1]->write_fd);
+                main_store(p[p_no]->write_fd, p[p_no + 1]->read_fd, full_path);
                 // store_process(p[p_no]->write_fd, p[p_no + 1]->read_fd, full_path);
                 //  close(p[p_no]->write_fd);
                 //  close(p[p_no + 1]->read_fd);
@@ -235,18 +250,17 @@ void user_level_process()
         }
     }
     recipt *rcpt[3];
+    char buffer[1024];
     for (int i = 0, j = 0; i < 6; i += 2, j++)
     {
-        char buffer[1024];
         read(p[i]->read_fd, buffer, sizeof(buffer));
         printf("%s from pipe %d\n", buffer, i);
-        rcpt[j] = (recipt *)malloc(sizeof(recipt));
         rcpt[j] = decode(buffer);
     }
     get_score(rcpt);
     closedir(dir);
-    free(groceries);
-    free(user);
+    // free(groceries);
+    // free(user);
     while (wait(NULL) > 0)
         ;
 }

@@ -10,54 +10,64 @@
 #include "sys/stat.h"
 #include "sys/types.h"
 #include "thread_level.h"
+extern userInfo *user;
 
-#define TERMINATION "TERMINATE"
-#define SUCCESS "SUCCESS"
+const char *SUCCESS= "SUCCESS";
+const char *TERMINATION= "TERMINATE";
 
-sem_t *log;     
+sem_t *logw;     
 sem_t *put_result; 
 sem_t *sem_process;
 sem_t *sem_thread;
-recipt rcpt[3];
+recipt *rcpt;
 char *end_massage;
 double *scores;
 const int dir_no = 3;
 const int max_size = 1024;
 
-void *file_process(void *arg)
-{
-    char *file_path = (char *)arg;
-    printf("Thread created for file%s\n", file_path);
-    pthread_exit(NULL);
+void *runner(void *args);
+
+char *copy(char *str){
+    char *string = malloc(strlen(str) * sizeof(char));
+    strcpy(string,str);
+    return string;
 }
+
 
 void category_level_thread(int write_fd, int read_fd, char *path)
 {
-    // rcpt = (recipt *)malloc(sizeof(recipt));
+    rcpt = (recipt *)malloc(sizeof(recipt));
+    rcpt->n = 0;
+    printf("User n is %d\n",user->n);
+    rcpt->items = (item **)malloc(sizeof(item *) * user->n);
     char *msg;
     pthread_t thread[100];
     int thread_count = 0;
-    char file_path[max_size];
+    sem_process = malloc(sizeof(sem_t));
+    sem_thread = malloc(sizeof(sem_t));
+    logw = malloc(sizeof(sem_t));
+    put_result = malloc(sizeof(sem_t));
     if (sem_init(sem_process, 0, 0) != 0)
     {
-        perror("Create sem process failed");
+        printf("Create sem process failed\n");
         return;
     }
     if (sem_init(sem_thread, 0, 0) != 0)
     {
-        perror("Create sem thread failed");
+        printf("Create sem thread failed\n");
         return;
     }
-    if (sem_init(log, 0, 1) != 0)
+    if (sem_init(logw, 0, 1) != 0)
     {
-        perror("Create sem log failed");
+        printf("Create sem log failed\n");
         return;
     }
     if (sem_init(put_result, 0, 1) != 0)
     {
-        perror("Create sem put_result failed");
+        printf("Create sem put_result failed\n");
         return;
     }
+
     printf("open %s\n", path);
     DIR *dir = opendir(path);
     if (dir == NULL)
@@ -67,6 +77,8 @@ void category_level_thread(int write_fd, int read_fd, char *path)
     }
     struct dirent *entry;
     struct stat file_stat;
+    char file_path[512];
+
     while ((entry = readdir(dir)) != NULL)
     {
         snprintf(file_path, sizeof(file_path), "%s/%s", path, entry->d_name);
@@ -76,9 +88,9 @@ void category_level_thread(int write_fd, int read_fd, char *path)
             {
                 if (strstr(entry->d_name, ".txt") != NULL)
                 {
-                    if (pthread_create(&thread[thread_count], NULL, runner, file_path) != 0)
+                    if (pthread_create(&thread[thread_count], NULL, runner, copy(file_path)) != 0)
                     {
-                        perror("Failed to create a thread\n");
+                        printf("Failed to create a thread\n");
                     }
                     else
                     {
@@ -95,10 +107,10 @@ void category_level_thread(int write_fd, int read_fd, char *path)
     }
     msg = encode(rcpt);
     write(write_fd, msg, strlen(msg) + 1);
-    char *buffer;
-    read(read_fd, buffer, max_size);
+    char buffer[1024];
+    read(read_fd, buffer, sizeof(buffer));
     scores = decode_score(buffer, user->n);
-    if(strlen(buffer) == 0) {
+    if(strlen(buffer) == 1) {
         end_massage = TERMINATION;
     }else {
         end_massage = SUCCESS;

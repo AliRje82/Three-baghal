@@ -8,7 +8,6 @@
 #include "structs.h"
 #include <unistd.h>
 #include <time.h>
-#include "user_level.h"
 #include "category_level.h"
 #include "sys/mman.h"
 #include "sys/stat.h"
@@ -23,6 +22,20 @@
 #define SHARED_MEM_SIZE sizeof(int)
 #define MAX_LINE_LEN 100
 
+extern const char *SUCCESS;
+extern const char *TERMINATION;
+
+extern userInfo *user;
+extern sem_t *put_result; 
+extern sem_t *sem_process;
+extern sem_t *sem_thread;
+extern sem_t *logw;   
+extern recipt *rcpt;
+extern double *scores;
+extern char *end_massage;
+
+char *copy(char *str);
+  
 /*
 Function defines:
 */
@@ -34,29 +47,29 @@ int reader_problem(char *path, item *it,int *reader_count,
     sem_t *mutex,sem_t *write,sem_t *queue);
 int extract_file(FILE *fptr,item *it);
 char* read_line(FILE* fptr);
-void runner(void *args);
+void *runner(void *args);
 void main_thread(char *path,sem_t *mutex,sem_t *write,sem_t *queue,int *reader_count);
 
 void main_thread(char *path,sem_t *mutex,sem_t *write,sem_t *queue,int *reader_count){
    item it;
-   
    /*
    * Read the file!
    */
-   int entity = reader_problem(path,&it,reader_count,mutex,write,queue);
-   
+    int entity = 0;
+    entity = reader_problem(path,&it,reader_count,mutex,write,queue);
     /*
     * Check to see if it is in the list
     */
-
-   int hit=check_forHit(&it,path);
-
+   char *new_path = copy(path);
+   int slash = strrchr(new_path,'/')-new_path;
+   new_path[slash]='\0';
+   int hit=check_forHit(&it,new_path);
    if (hit == -1 || entity < user->groceries[hit].count){
     /*
     ! Check to see if we have enough!
     */
 
-    printf("LOG: NO hit in this thread!\n");
+    //printf("LOG: NO hit in this thread!\n");
     // TODO: Terminate the thread!
     sem_post(sem_process);
     sem_wait(sem_thread);
@@ -66,14 +79,16 @@ void main_thread(char *path,sem_t *mutex,sem_t *write,sem_t *queue,int *reader_c
     //*Putting the new result!
     sem_wait(put_result);
     //!Critical section
-    rcpt->items[(rcpt->n)++]=it;
+    rcpt->items[rcpt->n]=&it;
+    rcpt->n++;
+    printf("Putting on rcpt %d \n",rcpt->n);
     sem_post(put_result);
 
     sem_post(sem_process);
+    printf("Waiting for final\n");
     sem_wait(sem_thread);
-
     //*Checking for final massage
-    if(strcmp(end_massage,SUCCESS)==0){
+    if(end_massage == SUCCESS){
         //*Means Succed so we need to update file
         writer_problem(path,queue,write,scores[hit],user->groceries[hit].count);
         return;
@@ -95,10 +110,10 @@ void *runner(void *args){
      Cast the args to thread_args and call main function.
     */
     char *path = (char *) args;
+
     int store_num;
     int file_num;
-
-    if(sscanf(path, "Dataset/Store%d/%*[^/]/%d.txt", &store_num,&file_num) == 2){
+    if(sscanf(path, "./Dataset/Store%d/%*[^/]/%d.txt", &store_num,&file_num) == 2){
 
         char shared_addr[1024];
 
@@ -167,12 +182,12 @@ Write to log
 */
 void write_log(char *path,char *massage){
     FILE *fptr;
-    sem_wait(log);
+    sem_wait(logw);
     //Entring critical section
     fptr = fopen(path,"a");
     fprintf(fptr,massage);
     fclose(fptr);
-    sem_post(log);
+    sem_post(logw);
     //Exiting critical section
 }
 
@@ -183,11 +198,12 @@ int check_forHit(item *it,char *path){
     int i=0;
     for(i = 0; i < user->n; i++)
     {
-        if(strcmp(it->name,user->groceries->name)==0) break;
+        if(strcmp(it->name,user->groceries[i].name)==0) break;
     }
     char massage[MAX_LINE_LEN];
     char new_path[MAX_LINE_LEN];
     snprintf(new_path,MAX_LINE_LEN,"%s/USER%d_ORDERID%d.log",path,user->user_id,user->order_id);
+
     if(i < user->n){
         
         snprintf(massage,MAX_LINE_LEN,"Found %s in %s path. My TID is %d\n",it->name,path,getpid());
@@ -212,7 +228,7 @@ void edit_file(char *path,double user_score,int user_wanted){
     fptr = fopen(path,"r+");
     
     int line_num=0;
-    char line[256];
+    char line[1024];
     double new_score;
     while(fgets(line,sizeof(line),fptr)){
         line_num++;
