@@ -53,14 +53,13 @@ char *encode(recipt *rcpt){
         rcpt->items[i]->name,rcpt->items[i]->score,rcpt->items[i]->price); 
         strcat(massage,encoding);
     }
-    /*For clean memory we can also do*/
-    //free(rcpt);
     return massage;
     
 }
 
 char *encode_score(double scores[],int n){
     char *massage = (char *)malloc(MAX_NUM_SIZE *sizeof(char)*n);
+    massage[0]='\0';
     char encoding[MAX_NUM_SIZE];
     for (int i = 0; i < n; i++)
     {

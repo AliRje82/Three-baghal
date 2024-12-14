@@ -72,8 +72,8 @@ void main_store(int write_fd, int read_fd,char *path){
     /*
     *Sending data to Upper level
     */
-   write(write_fd,result_msg,strlen(result_msg)+1);
-
+    write(write_fd,result_msg,strlen(result_msg)+1);
+    free(result_msg);
     /*
     * Wait for upper level
     */
@@ -91,6 +91,8 @@ void main_store(int write_fd, int read_fd,char *path){
     *Waiting to terminate all Childs!
     */
     while (wait(NULL)>0);
+    free(r->items);
+    free(r);
     printf("Ending of stores %s\n",path);
     
 
@@ -121,6 +123,7 @@ recipt *merge_result(char massage[8][MAX_BUFFER_SIZE],int n){
         result->items[(result->n)++] = arr[j]->items[(arr[j]->n)-1];
         arr[j]->n--;
     }
+    free(arr);
 
     return result;
     
