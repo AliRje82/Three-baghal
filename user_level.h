@@ -263,6 +263,7 @@ void user_level_process()
     // free(user);
     while (wait(NULL) > 0)
         ;
+    printf("Ending for User\n");
 }
 
 #endif

@@ -226,10 +226,12 @@ Edit the file
 */
 void edit_file(char *path,double user_score,int user_wanted){
     FILE *fptr;
-    fptr = fopen(path,"r+");
+    fptr = fopen(path,"r");
     
     int line_num=0;
     char line[1024];
+    char file[4096];
+    file[0]='\0';
     double new_score;
     while(fgets(line,sizeof(line),fptr)){
         line_num++;
@@ -237,8 +239,8 @@ void edit_file(char *path,double user_score,int user_wanted){
             if(sscanf(line,"Score: %lf",&new_score)==1){
                 //Write a new score
                 new_score = (new_score + user_score)/2;
-                fseek(fptr,-strlen(line),SEEK_CUR);
-                fprintf(fptr,"Score: %.2f\n",new_score);
+                sprintf(line,"Score: %.2f\n",new_score);
+                strcat(file,line);
 
             }else{
                 printf("ERROR: Something went wrong while changing score in file %s\n",path);
@@ -249,8 +251,8 @@ void edit_file(char *path,double user_score,int user_wanted){
             if(sscanf(line,"Entity: %d",&entity)==1){
                 //Write a new entity
                 entity-=user_wanted;
-                fseek(fptr,-strlen(line),SEEK_CUR);
-                fprintf(fptr,"Entity: %d\n",entity);
+                sprintf(line,"Entity: %d\n",entity);
+                strcat(file,line);
 
             }else{
                 printf("ERROR: Something went wrong while changing Entity in file %s\n",path);
@@ -267,11 +269,18 @@ void edit_file(char *path,double user_score,int user_wanted){
             char new_time[30];
             strftime(new_time,sizeof(new_time),"%Y-%m-%d %H:%M:%S",timeinfo);
 
-            fseek(fptr,-strlen(line),SEEK_CUR);
-            fprintf(fptr,"Last Modified: %s\n",new_time);
+            sprintf(line,"Last Modified: %s\n",new_time);
+            strcat(file,line);
+
+        }else if(line_num <=6){
+            strcat(file,line);
         }
     }
     
+    fclose(fptr);
+
+    fptr=fopen(path,"w");
+    fprintf(fptr,"%s",file);
     fclose(fptr);
 
 
@@ -284,7 +293,9 @@ void writer_problem(char *path,sem_t *queue,sem_t *write,double user_score,int u
     sem_wait(queue);
     sem_wait(write);
     //Critical section
+    printf("Starting to write on file in %s\n",path);
     edit_file(path,user_score,user_wanted);
+    printf("End of writing in %s\n",path);
     //Exiting critical section
     sem_post(write);
     sem_post(queue);

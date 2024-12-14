@@ -109,16 +109,18 @@ void category_level_thread(int write_fd, int read_fd, char *path)
     write(write_fd, msg, strlen(msg) + 1);
     char buffer[1024];
     read(read_fd, buffer, sizeof(buffer));
-    scores = decode_score(buffer, user->n);
     if(strlen(buffer) == 1) {
         end_massage = TERMINATION;
+        printf("Terminate!\n");
     }else {
         end_massage = SUCCESS;
+        scores = decode_score(buffer, user->n);
     }
     for (int i = 0; i < thread_count; i++)
     {
         sem_post(sem_thread);
     }
+    printf("Ending on Category! %s\n",path);
 }
 
 #endif

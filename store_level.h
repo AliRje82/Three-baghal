@@ -91,7 +91,7 @@ void main_store(int write_fd, int read_fd,char *path){
     *Waiting to terminate all Childs!
     */
     while (wait(NULL)>0);
-    
+    printf("Ending of stores %s\n",path);
     
 
 }
