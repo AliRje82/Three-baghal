@@ -6,7 +6,7 @@
     - [X]  Creating process for each shop
     - [X]  Waiting for lower level to give you options
     - [ ]  Check if already have shoped
-    - [ ]  Create a thread to get scores from user
+    - [X]  Create a thread to get scores from user
     - [X]  Send the result to lower level
     - [X]  Wait for all the process
   - [ ]  Store level

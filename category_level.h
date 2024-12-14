@@ -18,7 +18,7 @@ sem_t *log;
 sem_t *put_result; 
 sem_t *sem_process;
 sem_t *sem_thread;
-recipt *rcpt;
+recipt rcpt[3];
 char *end_massage;
 double *scores;
 const int dir_no = 3;
@@ -33,7 +33,7 @@ void *file_process(void *arg)
 
 void category_level_thread(int write_fd, int read_fd, char *path)
 {
-    rcpt = (recipt *)malloc(sizeof(recipt));
+    // rcpt = (recipt *)malloc(sizeof(recipt));
     char *msg;
     pthread_t thread[100];
     int thread_count = 0;
@@ -97,15 +97,15 @@ void category_level_thread(int write_fd, int read_fd, char *path)
     write(write_fd, msg, strlen(msg) + 1);
     char *buffer;
     read(read_fd, buffer, max_size);
-    scores = decode(buffer);
-    for (int i = 0; i < thread_count; i++)
-    {
-        sem_post(sem_thread);
-    }
-    if(strlen(scores) == 0) {
+    scores = decode_score(buffer, user->n);
+    if(strlen(buffer) == 0) {
         end_massage = TERMINATION;
     }else {
         end_massage = SUCCESS;
+    }
+    for (int i = 0; i < thread_count; i++)
+    {
+        sem_post(sem_thread);
     }
 }
 

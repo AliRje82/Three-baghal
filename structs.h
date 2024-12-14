@@ -13,7 +13,7 @@ typedef struct
     grocery *groceries;
     int user_id;
     int order_id;
-    int budget;
+    double budget;
     int n;
 } userInfo;
 
