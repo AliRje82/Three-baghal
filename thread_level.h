@@ -166,10 +166,14 @@ void *runner(void *args){
         }
         
         main_thread(path,mutex,writer,queue,reader_count); 
+        sem_close(queue);
+        sem_close(mutex);
+        sem_close(writer);
     }else
     {
         printf("Something went wrong in thread processing!\n");
     }
+
     pthread_exit(0);
 
     
@@ -204,7 +208,7 @@ int check_forHit(item *it,char *path){
     char massage[MAX_LINE_LEN];
     char new_path[MAX_LINE_LEN];
     snprintf(new_path,MAX_LINE_LEN,"%s/USER%d_ORDERID%d.log",new_p,user->user_id,user->order_id);
-
+    free(new_p);
     if(i < user->n){
         
         snprintf(massage,MAX_LINE_LEN,"Found %s in %s path. My TID is %d\n",it->name,path,getpid());
