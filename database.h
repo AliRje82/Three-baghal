@@ -121,10 +121,10 @@ void update_order_and_stores() {
     sqlite3_stmt *res;
     int rc;
 
-        rc = sqlite3_open("store.db", &db);
+        rc = sqlite3_open("purchases.db", &db);
     if (rc != SQLITE_OK) {
         fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(db));
-        return 1;
+        return;
     }
     
     const char *sql_update = 
