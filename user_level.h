@@ -26,6 +26,7 @@ typedef struct
 {
     int max_store;
     int max_pipe;
+    double *scores;
 } data;
 
 void create_pipe(pipes *pi)
@@ -78,43 +79,9 @@ void user_input()
     printf("DEBUG user budget: %lf", user->budget);
 }
 
-void *collect_scores(void *arg)
+void *calculate_scores(void *arg)
 {
-    data *d = (data *)arg;
-    printf("%d\n", d->max_store);
-    double *scores = malloc(sizeof(double) * user->n);
-    char *m = "1";
-
-    printf("Please enter you score for each items\n");
-    printf("%s\n", user->groceries[0].name);
-    for (int i = 0; i < user->n; i++)
-    {
-        printf("Score for item %s:", user->groceries[i].name);
-        if (scanf("%lf", &scores[i]) == -1)
-        {
-            printf("Error\n");
-        }
-        printf("%lf", scores[i]);
-    }
-    printf("Sending the result\n");
-    char *str;
-    for (int i = 1; i < 6; i += 2)
-    {
-        if (i == d->max_pipe)
-        {
-            str = encode_score(scores, user->n);
-            write(p[d->max_pipe]->write_fd, str, strlen(str) + 1);
-        }
-        else
-        {
-            write(p[i]->write_fd, m, strlen(m) + 1);
-        }
-    }
-    pthread_exit(NULL);
-}
-
-void get_score(recipt **rcpt)
-{
+    recipt *rcpt = (recipt *)arg;
     double score1 = 0;
     double price1 = 0;
 
@@ -128,26 +95,26 @@ void get_score(recipt **rcpt)
     double max_price = 0;
     data *d = malloc(sizeof(data));
 
-    for (int i = 0; i < rcpt[0]->n; i++)
+    for (int i = 0; i < rcpt[0].n; i++)
     {
-        score1 += rcpt[0]->items[i]->score * rcpt[0]->items[i]->price;
-        price1 += rcpt[0]->items[i]->price;
+        score1 += rcpt[0].items[i]->score * rcpt[0].items[i]->price;
+        price1 += rcpt[0].items[i]->price;
     }
-    score1 /= rcpt[0]->n;
+    score1 /= rcpt[0].n;
 
-    for (int i = 0; i < rcpt[1]->n; i++)
+    for (int i = 0; i < rcpt[1].n; i++)
     {
-        score2 += rcpt[1]->items[i]->score * rcpt[1]->items[i]->price;
-        price2 += rcpt[1]->items[i]->price;
+        score2 += rcpt[1].items[i]->score * rcpt[1].items[i]->price;
+        price2 += rcpt[1].items[i]->price;
     }
-    score2 /= rcpt[1]->n;
+    score2 /= rcpt[1].n;
 
-    for (int i = 0; i < rcpt[2]->n; i++)
+    for (int i = 0; i < rcpt[2].n; i++)
     {
-        score3 += rcpt[2]->items[i]->score * rcpt[2]->items[i]->price;
-        price3 += rcpt[2]->items[i]->price;
+        score3 += rcpt[2].items[i]->score * rcpt[2].items[i]->price;
+        price3 += rcpt[2].items[i]->price;
     }
-    score3 /= rcpt[2]->n;
+    score3 /= rcpt[2].n;
 
     if (score1 > score2)
     {
@@ -200,13 +167,74 @@ void get_score(recipt **rcpt)
     }
 
     update_order_and_stores();
-    
-    pthread_t thread;
-    if (pthread_create(&thread, NULL, collect_scores, d) != 0)
+    pthread_exit(NULL);
+}
+
+void *collect_scores(void *arg)
+{
+    data *d = (data *)arg;
+    printf("%d\n", d->max_store);
+
+    printf("Please enter you score for each items\n");
+    printf("%s\n", user->groceries[0].name);
+    for (int i = 0; i < user->n; i++)
     {
-        perror("Thread creation failed");
+        printf("Score for item %s:", user->groceries[i].name);
+        if (scanf("%lf", &d->scores[i]) == -1)
+        {
+            printf("Error\n");
+        }
+        printf("%lf", d->scores[i]);
+    }
+    pthread_exit(NULL);
+}
+
+void *sending_scores(void *arg)
+{
+    data *d = (data *)arg;
+    char *m = "1";
+    char *str;
+    printf("Sending the result\n");
+    for (int i = 1; i < 6; i += 2)
+    {
+        if (i == d->max_pipe)
+        {
+            str = encode_score(scores, user->n);
+            write(p[d->max_pipe]->write_fd, str, strlen(str) + 1);
+        }
+        else
+        {
+            write(p[i]->write_fd, m, strlen(m) + 1);
+        }
+    }
+    pthread_exit(NULL);
+}
+
+void three_thread_process(recipt **rcpt)
+{
+    pthread_t thread1, thread2, thread3;
+    data *d = malloc(sizeof(data));
+    d->scores = malloc(sizeof(double) * user->n);
+
+    if (pthread_create(&thread1, NULL, calculate_scores, rcpt) != 0)
+    {
+        perror("Failed to create thread1");
         return;
     }
+    if (pthread_create(&thread2, NULL, collect_scores, d) != 0)
+    {
+        perror("Failed to create thread2");
+        return;
+    }
+    if (pthread_create(&thread3, NULL, sending_scores, d) != 0)
+    {
+        perror("Failed to create thread3");
+        return;
+    }
+
+    pthread_join(thread1, NULL);
+    pthread_join(thread2, NULL);
+    pthread_join(thread3, NULL);
 }
 
 void user_level_process()
@@ -263,20 +291,12 @@ void user_level_process()
                 close(p[p_no]->read_fd);
                 close(p[p_no + 1]->write_fd);
                 main_store(p[p_no]->write_fd, p[p_no + 1]->read_fd, full_path);
-                // store_process(p[p_no]->write_fd, p[p_no + 1]->read_fd, full_path);
-                //  close(p[p_no]->write_fd);
-                //  close(p[p_no + 1]->read_fd);
                 exit(0);
             }
             else
             {
                 close(p[p_no]->write_fd);
                 close(p[p_no + 1]->read_fd);
-                // char buffer[1024];
-                // read(p[p_no]->read_fd, buffer, sizeof(buffer));
-                // printf("Massage received from child %d\n", pid);
-                // close(p[p_no]->read_fd);
-                // close(p[p_no]->write_fd);
             }
             p_no += 2;
         }
@@ -289,7 +309,7 @@ void user_level_process()
         printf("%s from pipe %d\n", buffer, i);
         rcpt[j] = decode(buffer);
     }
-    get_score(rcpt);
+    three_thread_process(rcpt);
     closedir(dir);
     // free(groceries);
     // free(user);
