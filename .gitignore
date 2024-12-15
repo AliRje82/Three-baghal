@@ -5,3 +5,4 @@ test.c
 test
 239.txt
 semaphore_test.c
+purchases.db

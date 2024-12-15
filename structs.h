@@ -15,6 +15,9 @@ typedef struct
     int order_id;
     double budget;
     int n;
+    int has_bought_from_store1;
+    int has_bought_from_store2;
+    int has_bought_from_store3;
 } userInfo;
 
 typedef struct

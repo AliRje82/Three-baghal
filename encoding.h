@@ -9,8 +9,10 @@
 #define MAX_NUM_SIZE 5
 
 recipt *decode(char *str){
+    printf("decooooooooooode%s\n",str);
     recipt *rcpt = (recipt *) malloc(sizeof(recipt));
     char *search=strtok(str,",");
+    printf("Search..........%s\n", search);
     rcpt->n = atoi(search);
     rcpt->items = (item **)malloc(rcpt->n * sizeof(item*));
     if(rcpt->n == 0){
