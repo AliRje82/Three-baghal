@@ -28,6 +28,11 @@ typedef struct
     int max_pipe;
     double *scores;
 } data;
+typedef struct
+{
+    data *d;
+    recipt **rcpt;
+} thread_data;
 
 void create_pipe(pipes *pi)
 {
@@ -81,7 +86,10 @@ void user_input()
 
 void *calculate_scores(void *arg)
 {
-    recipt **rcpt = (recipt **)arg;
+    thread_data *tdata = (thread_data *)arg;
+    recipt **rcpt = tdata->rcpt;
+    data *d = tdata->d;
+    
     double score1 = 0;
     double price1 = 0;
 
@@ -93,7 +101,6 @@ void *calculate_scores(void *arg)
 
     double max_score = 0;
     double max_price = 0;
-    data *d = malloc(sizeof(data));
 
     for (int i = 0; i < rcpt[0]->n; i++)
     {
@@ -172,9 +179,10 @@ void *calculate_scores(void *arg)
 
 void *collect_scores(void *arg)
 {
-    data *d = (data *)arg;
-    printf("%d\n", d->max_store);
+    thread_data *tdata = (thread_data *)arg;
+    data *d = tdata->d;
 
+    printf("%d\n", d->max_store);
     printf("Please enter you score for each items\n");
     printf("%s\n", user->groceries[0].name);
     for (int i = 0; i < user->n; i++)
@@ -191,7 +199,9 @@ void *collect_scores(void *arg)
 
 void *sending_scores(void *arg)
 {
-    data *d = (data *)arg;
+    thread_data *tdata = (thread_data *)arg;
+    data *d = tdata->d;
+
     char *m = "1";
     char *str;
     printf("Sending the result\n");
@@ -213,30 +223,38 @@ void *sending_scores(void *arg)
 void three_thread_process(recipt **rcpt)
 {
     pthread_t thread1, thread2, thread3;
+    thread_data tdata;
+
     data *d = malloc(sizeof(data));
     d->scores = malloc(sizeof(double) * user->n);
 
-    if (pthread_create(&thread1, NULL, calculate_scores, rcpt) != 0)
+    tdata.d = d;
+    tdata.d->scores = d->scores;
+    tdata.rcpt = rcpt;
+
+    if (pthread_create(&thread1, NULL, calculate_scores, &tdata) != 0)
     {
         perror("Failed to create thread1");
         return;
     }
     pthread_join(thread1, NULL);
 
-    if (pthread_create(&thread2, NULL, collect_scores, d) != 0)
+    if (pthread_create(&thread2, NULL, collect_scores, &tdata) != 0)
     {
         perror("Failed to create thread2");
         return;
     }
     pthread_join(thread2, NULL);
 
-    if (pthread_create(&thread3, NULL, sending_scores, d) != 0)
+    if (pthread_create(&thread3, NULL, sending_scores, &tdata) != 0)
     {
         perror("Failed to create thread3");
         return;
     }
 
     pthread_join(thread3, NULL);
+    // free(d);
+    // free(d->scores);
 }
 
 void user_level_process()
@@ -283,7 +301,7 @@ void user_level_process()
             if (pid < 0)
             {
                 perror("Fork failed");
-                // closedir(dir);
+                closedir(dir);
                 return;
             }
             else if (pid == 0)
@@ -314,10 +332,14 @@ void user_level_process()
         rcpt[j] = decode(buffer);
     }
     three_thread_process(rcpt);
-    // free(groceries);
-    // free(user);
     while (wait(NULL) > 0)
         ;
+    // free(groceries);
+    // free(user);
+    for (int i = 0; i < 6; i++)
+    {
+        free(p[i]);
+    }
     printf("Ending for User\n");
 }
 

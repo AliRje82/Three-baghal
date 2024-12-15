@@ -121,6 +121,14 @@ void category_level_thread(int write_fd, int read_fd, char *path)
         sem_post(sem_thread);
     }
     printf("Ending on Category! %s\n",path);
+    // free(end_massage);
+    // sem_destroy(&sem_thread);
+    // sem_destroy(&sem_process);
+    // sem_destroy(&logw);
+    // sem_destroy(&put_result);
+    // free(rcpt);
+    // free(rcpt->items);
+    // free(msg);
 }
 
 #endif
