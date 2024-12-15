@@ -81,7 +81,7 @@ void user_input()
 
 void *calculate_scores(void *arg)
 {
-    recipt *rcpt = (recipt *)arg;
+    recipt **rcpt = (recipt **)arg;
     double score1 = 0;
     double price1 = 0;
 
@@ -95,26 +95,26 @@ void *calculate_scores(void *arg)
     double max_price = 0;
     data *d = malloc(sizeof(data));
 
-    for (int i = 0; i < rcpt[0].n; i++)
+    for (int i = 0; i < rcpt[0]->n; i++)
     {
-        score1 += rcpt[0].items[i]->score * rcpt[0].items[i]->price;
-        price1 += rcpt[0].items[i]->price;
+        score1 += rcpt[0]->items[i]->score * rcpt[0]->items[i]->price;
+        price1 += rcpt[0]->items[i]->price;
     }
-    score1 /= rcpt[0].n;
+    score1 /= rcpt[0]->n;
 
-    for (int i = 0; i < rcpt[1].n; i++)
+    for (int i = 0; i < rcpt[1]->n; i++)
     {
-        score2 += rcpt[1].items[i]->score * rcpt[1].items[i]->price;
-        price2 += rcpt[1].items[i]->price;
+        score2 += rcpt[1]->items[i]->score * rcpt[1]->items[i]->price;
+        price2 += rcpt[1]->items[i]->price;
     }
-    score2 /= rcpt[1].n;
+    score2 /= rcpt[1]->n;
 
-    for (int i = 0; i < rcpt[2].n; i++)
+    for (int i = 0; i < rcpt[2]->n; i++)
     {
-        score3 += rcpt[2].items[i]->score * rcpt[2].items[i]->price;
-        price3 += rcpt[2].items[i]->price;
+        score3 += rcpt[2]->items[i]->score * rcpt[2]->items[i]->price;
+        price3 += rcpt[2]->items[i]->price;
     }
-    score3 /= rcpt[2].n;
+    score3 /= rcpt[2]->n;
 
     if (score1 > score2)
     {
@@ -148,7 +148,7 @@ void *calculate_scores(void *arg)
     if (max_price > user->budget && user->budget != (-1))
     {
         printf("The price of the item (%lf) are beyond your budget (%lf)....You can not buy these stuffs\n", max_price, user->budget);
-        return;
+        pthread_exit(0);
     }
 
     switch (d->max_store)
@@ -167,7 +167,7 @@ void *calculate_scores(void *arg)
     }
 
     update_order_and_stores();
-    pthread_exit(NULL);
+    pthread_exit(0);
 }
 
 void *collect_scores(void *arg)
@@ -221,19 +221,21 @@ void three_thread_process(recipt **rcpt)
         perror("Failed to create thread1");
         return;
     }
+    pthread_join(thread1, NULL);
+
     if (pthread_create(&thread2, NULL, collect_scores, d) != 0)
     {
         perror("Failed to create thread2");
         return;
     }
+    pthread_join(thread2, NULL);
+
     if (pthread_create(&thread3, NULL, sending_scores, d) != 0)
     {
         perror("Failed to create thread3");
         return;
     }
 
-    pthread_join(thread1, NULL);
-    pthread_join(thread2, NULL);
     pthread_join(thread3, NULL);
 }
 
@@ -301,6 +303,8 @@ void user_level_process()
             p_no += 2;
         }
     }
+    closedir(dir);
+
     recipt *rcpt[3];
     char buffer[1024];
     for (int i = 0, j = 0; i < 6; i += 2, j++)
@@ -310,7 +314,6 @@ void user_level_process()
         rcpt[j] = decode(buffer);
     }
     three_thread_process(rcpt);
-    closedir(dir);
     // free(groceries);
     // free(user);
     while (wait(NULL) > 0)
