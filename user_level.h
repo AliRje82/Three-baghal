@@ -204,7 +204,7 @@ void get_score(recipt **rcpt)
 
 void user_level_process()
 {
-    user_input();
+    //user_input();
     const char *path = "./Dataset";
     printf("%s\n",user->groceries[0].name);
 
@@ -242,6 +242,7 @@ void user_level_process()
             printf("Pipes created for directory %s\n", entry->d_name);
             printf("Pipe%d read_fd %d and write_fd %d\n", p_no, p[p_no]->read_fd, p[p_no]->write_fd);
             printf("Pipe%d read_fd %d and write_fd %d\n", p_no + 1, p[p_no + 1]->read_fd, p[p_no + 1]->write_fd);
+            printf("Log: PID %d create a process for dir %s\n",getpid(),full_path);
             pid = fork();
             if (pid < 0)
             {

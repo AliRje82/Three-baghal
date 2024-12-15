@@ -88,6 +88,8 @@ void category_level_thread(int write_fd, int read_fd, char *path)
             {
                 if (strstr(entry->d_name, ".txt") != NULL)
                 {
+                    printf("Log: PID %d create a thread for file %s\n",getpid(),file_path);
+
                     if (pthread_create(&thread[thread_count], NULL, runner, copy(file_path)) != 0)
                     {
                         printf("Failed to create a thread\n");

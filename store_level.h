@@ -46,6 +46,7 @@ void main_store(int write_fd, int read_fd,char *path){
         
         printf("Debug:Openning This this category %s\n",dp->d_name);
         snprintf(newPath,512,"%s/%s",path,dp->d_name);
+        printf("Log: PID %d create a process for dir %s\n",getpid(),newPath);
         pid = fork();
         if(pid ==0){
             close(p[i].read_fd);

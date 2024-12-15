@@ -28,7 +28,7 @@ def submit_form():
     threshold_entry.delete(0, ctk.END)
 
     try:
-        script_path = os.path.abspath("./test")
+        script_path = os.path.abspath("./main")
         subprocess.Popen([
             "gnome-terminal", "--", "zsh", "-c", 
             f"{script_path} {user_id} {shopping_list} {threshold} {str(number_of_items)}; exec zsh"
