@@ -38,6 +38,31 @@ void create_pipe(pipes *pi)
     pi->write_fd = pipe_fd[1];
 }
 
+void gui_user_input(char *userid,char *shopping_list,char *threshold,int n){
+    user = malloc(sizeof(userInfo));
+    user->user_id = atoi(userid);
+    user->budget = atof(threshold);
+    user->n = n;
+    user->groceries = malloc(sizeof(grocery) * n);
+
+    char *search = strtok(shopping_list, ",");
+    for (int i = 0; i < n; i++) {
+        if (search == NULL) {
+            fprintf(stderr, "Error: Malformed shopping list.\n");
+            exit(EXIT_FAILURE);
+        }
+        strcpy(user->groceries[i].name, search);  
+        search = strtok(NULL, ",");
+        if (search == NULL) {
+            fprintf(stderr, "Error: Malformed shopping list.\n");
+            exit(EXIT_FAILURE);
+        }
+        user->groceries[i].count = atoi(search);  
+        search = strtok(NULL, ",");
+    }
+
+}
+
 void user_input()
 {
     char *username = (char *)malloc(sizeof(char) * 512);
