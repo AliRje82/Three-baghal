@@ -68,7 +68,6 @@ void main_thread(char *path,sem_t *mutex,sem_t *write,sem_t *queue,int *reader_c
     */
 
     printf("LOG: NO hit in this thread!\n");
-    // TODO: Terminate the thread!
     sem_post(sem_process);
     sem_wait(sem_thread);
 
