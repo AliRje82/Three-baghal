@@ -209,7 +209,7 @@ void *sending_scores(void *arg)
     {
         if (i == d->max_pipe)
         {
-            str = encode_score(scores, user->n);
+            str = encode_score(d->scores, user->n);
             write(p[d->max_pipe]->write_fd, str, strlen(str) + 1);
         }
         else
