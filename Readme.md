@@ -97,3 +97,6 @@ only make sure the latest version of main.c is compiled!
 # General idea of Levels!
 
 As you can see in this image it is the general idea of Levels!
+
+![Untitled design](https://github.com/user-attachments/assets/cc45d08f-3cc0-49a6-a631-f13fa27c58d9)
+
