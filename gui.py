@@ -21,7 +21,7 @@ def submit_form():
     shopping_items = shopping_list.strip().split("\n")  # Split into lines
     number_of_items = len([item for item in shopping_items if item.strip()])  # Count non-empty lines
     shopping_list = ",".join(shopping_items)  # Combine items with commas
-
+    print(shopping_list)
     # Clear the inputs
     user_id_entry.delete(0, ctk.END)
     shopping_list_entry.delete("1.0", ctk.END)
@@ -31,7 +31,7 @@ def submit_form():
         script_path = os.path.abspath("./main")
         subprocess.Popen([
             "gnome-terminal", "--", "zsh", "-c", 
-            f"{script_path} {user_id} {shopping_list} {threshold} {str(number_of_items)}; exec zsh"
+            f'{script_path} {user_id} "{shopping_list}" {threshold} {str(number_of_items)}; exec zsh'
         ])
     except FileNotFoundError:
         print("Error: Terminal emulator or C program not found.")

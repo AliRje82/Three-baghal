@@ -52,7 +52,7 @@ void gui_user_input(char *userid,char *shopping_list,char *threshold,int n){
     user->budget = atof(threshold);
     user->n = n;
     user->groceries = malloc(sizeof(grocery) * n);
-
+    user_query(); //Check the user!
     char *search = strtok(shopping_list, ",");
     for (int i = 0; i < n; i++) {
         if (search == NULL) {
@@ -68,6 +68,7 @@ void gui_user_input(char *userid,char *shopping_list,char *threshold,int n){
         user->groceries[i].count = atoi(search);  
         search = strtok(NULL, ",");
     }
+    user->order_id++;
 
 }
 
