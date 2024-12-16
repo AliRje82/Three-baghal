@@ -23,7 +23,6 @@ recipt *decode(char *str){
         rcpt->items[i] = malloc(sizeof(item));
         rcpt->items[i]->name=malloc(sizeof(char) * (strlen(search)+1));
         strcpy(rcpt->items[i]->name,search);
-        printf("%s\n", rcpt->items[i]->name);
         search = strtok(NULL, ",");
         rcpt->items[i]->score=atof(search);
         search = strtok(NULL, ",");
