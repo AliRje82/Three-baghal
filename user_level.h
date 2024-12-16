@@ -149,7 +149,13 @@ void *calculate_scores(void *arg)
     }
     score3 /= rcpt[2]->n;
 
-    if (score1 > score2 && rcpt[0]->n == user->n)
+    if(rcpt[0]->n != user->n) score1=-1;
+    if(rcpt[1]->n != user->n) score2=-1;
+    if(rcpt[2]->n != user->n) score3=-1;
+
+    
+
+    if (score1 > score2 )
     {
         max_score = score1;
         max_price = price1;
@@ -163,7 +169,7 @@ void *calculate_scores(void *arg)
         d->max_store = 2;
         d->max_pipe = 3;
     }
-    if (score3 > max_score && rcpt[2]->n == user->n)
+    if (score3 > max_score )
     {
         max_score = score3;
         max_price = price3;
@@ -173,12 +179,12 @@ void *calculate_scores(void *arg)
 
     printf("The best score is %lf which belongs to store%d: \n", max_score, d->max_store);
 
-    if ((d->max_store == 1 && user->has_bought_from_store1) || (d->max_store == 2 && user->has_bought_from_store2) || (d->max_store == 3 && user->has_bought_from_store3))
+    if ((d->max_store == 1 && user->has_bought_from_store1) || (d->max_store == 2 && user->has_bought_from_store2) || (d->max_store == 3 && user->has_bought_from_store3) )
     {
         max_price *= 0.9;
     }
 
-    if (max_price > user->budget && user->budget != (-1))
+    if (max_price > user->budget && user->budget != (-1) || (score1==-1 && score2==-1 && score3==-1))
     {
         printf("The price of the item (%lf) are beyond your budget (%lf)....You can not buy these stuffs\n", max_price, user->budget);
         d->max_pipe=-1;
