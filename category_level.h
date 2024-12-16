@@ -38,7 +38,6 @@ void category_level_thread(int write_fd, int read_fd, char *path)
 {
     rcpt = (recipt *)malloc(sizeof(recipt));
     rcpt->n = 0;
-    printf("User n is %d\n",user->n);
     rcpt->items = (item **)malloc(sizeof(item *) * user->n);
     char *msg;
     pthread_t thread[100];
@@ -68,7 +67,7 @@ void category_level_thread(int write_fd, int read_fd, char *path)
         return;
     }
 
-    printf("open %s\n", path);
+    //printf("PID %d : opening %s\n", getpid(),path);
     DIR *dir = opendir(path);
     if (dir == NULL)
     {
@@ -113,7 +112,7 @@ void category_level_thread(int write_fd, int read_fd, char *path)
     read(read_fd, buffer, sizeof(buffer));
     if(strlen(buffer) == 1) {
         end_massage = TERMINATION;
-        printf("Terminate!\n");
+        printf("Log: This category gonna terminate %s!\n",path);
     }else {
         end_massage = SUCCESS;
         scores = decode_score(buffer, user->n);
@@ -122,15 +121,28 @@ void category_level_thread(int write_fd, int read_fd, char *path)
     {
         sem_post(sem_thread);
     }
+
+    for(int i = 0 ; i < thread_count ; i++){
+        pthread_join(thread[i],NULL);
+    }
+    close(read_fd);
+    close(write_fd);
+    
+    if(end_massage == SUCCESS){
+        free(scores);
+    }
+
+    sem_destroy(sem_thread);
+    sem_destroy(sem_process);
+    sem_destroy(logw);
+    sem_destroy(put_result);
+    free(rcpt->items);
+    free(rcpt);
+    free(msg);
+    free(user->groceries);
+    free(user);
     printf("Ending on Category! %s\n",path);
-    // free(end_massage);
-    // sem_destroy(&sem_thread);
-    // sem_destroy(&sem_process);
-    // sem_destroy(&logw);
-    // sem_destroy(&put_result);
-    // free(rcpt);
-    // free(rcpt->items);
-    // free(msg);
+
 }
 
 #endif

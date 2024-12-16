@@ -11,7 +11,6 @@
 recipt *decode(char *str){
     recipt *rcpt = (recipt *) malloc(sizeof(recipt));
     char *search=strtok(str,",");
-    printf("Search..........%s\n", search);
     rcpt->n = atoi(search);
     rcpt->items = (item **)malloc(rcpt->n * sizeof(item*));
     if(rcpt->n == 0){
@@ -30,8 +29,10 @@ recipt *decode(char *str){
         search = strtok(NULL, ",");
         rcpt->items[i]->price=atof(search);
         search = strtok(NULL, ",");
+        rcpt->items[i]->count = atoi(search);
+        search = strtok(NULL, ",");
+
     }
-    printf("Returning rcpt\n");
     return rcpt;    
 }
 
@@ -39,19 +40,18 @@ char *encode(recipt *rcpt){
 
     char *massage = (char *)malloc(MAX_ITEM_SIZE * rcpt->n * sizeof(char));
     sprintf(massage,"%d,",rcpt->n);
-    printf("Recipt size is %d\n",rcpt->n);
     char encoding[MAX_ITEM_SIZE];
     for (int i = 0; i < rcpt->n; i++)
     {
         
         if((rcpt->n)-1==i){
-            sprintf(encoding,"%s,%.2f,%.2f", // Name,Score,price
-        rcpt->items[i]->name,rcpt->items[i]->score,rcpt->items[i]->price);
+            sprintf(encoding,"%s,%.2f,%.2f,%d", // Name,Score,price
+        rcpt->items[i]->name,rcpt->items[i]->score,rcpt->items[i]->price,rcpt->items[i]->count);
         strcat(massage,encoding);
         continue;
         }
-        sprintf(encoding,"%s,%.2f,%.2f,", // Name,Score,price,
-        rcpt->items[i]->name,rcpt->items[i]->score,rcpt->items[i]->price); 
+        sprintf(encoding,"%s,%.2f,%.2f,%d,", // Name,Score,price,
+        rcpt->items[i]->name,rcpt->items[i]->score,rcpt->items[i]->price,rcpt->items[i]->count); 
         strcat(massage,encoding);
     }
     return massage;

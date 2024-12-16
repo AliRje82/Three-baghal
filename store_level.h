@@ -60,15 +60,21 @@ void main_store(int write_fd, int read_fd,char *path){
         i+=2;
         
     }
+    closedir(dir);
     char massages[8][MAX_BUFFER_SIZE];
     for ( i = 0; i < 16; i+=2){
         read(p[i].read_fd, massages[i/2],sizeof(char)*MAX_BUFFER_SIZE);
-        printf("Massage is %s",massages[i/2]);
     }
     //Get the data and merge!
     recipt *r;
     r = merge_result(massages,user->n);
     char *result_msg = encode(r);
+    for(int i=0 ; i<r->n ; i++){
+        free(r->items[i]);
+    }
+    free(r->items);
+    free(r);
+    
 
     /*
     *Sending data to Upper level
@@ -84,7 +90,6 @@ void main_store(int write_fd, int read_fd,char *path){
     /*
     *send data to Lower level
     */
-    printf("Sending the result to category\n");
     for ( i = 0; i < 16; i+=2)
         write(p[i+1].write_fd, final_result,sizeof(final_result));
 
@@ -92,8 +97,15 @@ void main_store(int write_fd, int read_fd,char *path){
     *Waiting to terminate all Childs!
     */
     while (wait(NULL)>0);
-    free(r->items);
-    free(r);
+    for ( i = 0; i < 16; i+=2){
+        close(p[i].read_fd);
+        close(p[i+1].write_fd);
+    }
+    close(read_fd);
+    close(write_fd);
+    //Gloabl!
+    free(user->groceries);
+    free(user);
     printf("Ending of stores %s\n",path);
     
 
@@ -124,6 +136,11 @@ recipt *merge_result(char massage[8][MAX_BUFFER_SIZE],int n){
         result->items[(result->n)++] = arr[j]->items[(arr[j]->n)-1];
         arr[j]->n--;
     }
+    for (int i = 0; i < 8; i++)
+    {
+        free(arr[i]);
+    }
+    
     free(arr);
 
     return result;

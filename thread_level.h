@@ -67,19 +67,19 @@ void main_thread(char *path,sem_t *mutex,sem_t *write,sem_t *queue,int *reader_c
     ! Check to see if we have enough!
     */
 
-    //printf("LOG: NO hit in this thread!\n");
+    printf("LOG: NO hit in this thread!\n");
     // TODO: Terminate the thread!
     sem_post(sem_process);
     sem_wait(sem_thread);
 
     return;
    }
+    it.count = user->groceries[hit].count;
     //*Putting the new result!
     sem_wait(put_result);
     //!Critical section
     rcpt->items[rcpt->n]=&it;
     rcpt->n++;
-    printf("Putting on rcpt %d \n",rcpt->n);
     sem_post(put_result);
 
     sem_post(sem_process);
@@ -156,7 +156,7 @@ void *runner(void *args){
             pthread_exit(0);
         }
 
-        int *reader_count =(int *) mmap(NULL,SHARED_MEM_SIZE,
+        int *reader_count = mmap(NULL,SHARED_MEM_SIZE,
         PROT_READ | PROT_WRITE,MAP_SHARED,shm_flg,0);
 
         if(reader_count == MAP_FAILED){
@@ -164,8 +164,10 @@ void *runner(void *args){
             printf("ERROR: Couldnot open reader_count!\n");
             pthread_exit(0);
         }
-        
         main_thread(path,mutex,writer,queue,reader_count); 
+
+        munmap(reader_count,SHARED_MEM_SIZE);
+        close(shm_flg);
         sem_close(queue);
         sem_close(mutex);
         sem_close(writer);
@@ -211,10 +213,10 @@ int check_forHit(item *it,char *path){
     free(new_p);
     if(i < user->n){
         
-        snprintf(massage,MAX_LINE_LEN,"Found %s in %s path. My TID is %d\n",it->name,path,getpid());
+        snprintf(massage,MAX_LINE_LEN,"Found %s in %s path. My TID is %d\n",it->name,path,pthread_self());
     }else{
         i=-1;
-        snprintf(massage,MAX_LINE_LEN,"NotFound in %s path. My TID is %d\n",new_path,getpid());
+        snprintf(massage,MAX_LINE_LEN,"NotFound in %s path. My TID is %d\n",path,pthread_self());
     }
 
     write_log(new_path,massage);
@@ -316,8 +318,8 @@ int reader_problem(char *path, item *it,int *reader_count,
 
     sem_wait(queue);
     sem_wait(mutex);
-    (*reader_count)++;
-    if(*reader_count == 1)
+    *reader_count=*reader_count +1;
+    if((*reader_count) == 1)
         sem_wait(write);
     sem_post(mutex);
     sem_post(queue);
@@ -328,8 +330,8 @@ int reader_problem(char *path, item *it,int *reader_count,
     fclose(fptr);
     //Exit critical section
     sem_wait(mutex);
-    (*reader_count)--;
-    if(*reader_count==0)
+    *reader_count=*reader_count-1;
+    if((*reader_count)==0)
         sem_post(write);
     sem_post(mutex);
     return entity;

@@ -24,6 +24,7 @@ typedef struct
 {
     double score;
     double price;
+    int count;
     char *name;
 } item;
 
