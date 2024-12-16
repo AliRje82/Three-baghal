@@ -213,10 +213,10 @@ int check_forHit(item *it,char *path){
     free(new_p);
     if(i < user->n){
         
-        snprintf(massage,MAX_LINE_LEN,"Found %s in %s path. My TID is %d\n",it->name,path,pthread_self());
+        snprintf(massage,MAX_LINE_LEN,"Found %s in %s path. My TID is %u\n",it->name,path,pthread_self());
     }else{
         i=-1;
-        snprintf(massage,MAX_LINE_LEN,"NotFound in %s path. My TID is %d\n",path,pthread_self());
+        snprintf(massage,MAX_LINE_LEN,"NotFound in %s path. My TID is %u\n",path,pthread_self());
     }
 
     write_log(new_path,massage);
